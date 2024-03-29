@@ -7,10 +7,131 @@ import java.util.Calendar;
 import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.text.ParseException;
+import java.util.Scanner;
 class Student {
     public static final String URL = "jdbc:mysql://localhost:3306/Pratham";
     public static final String USER = "Pratham";
     public static final String PASSWORD = "Pratham@16";
+    
+    
+    public int getTotalQuantity(Connection connection, int bookId)
+    {	
+    	int Quantity =0;
+    	Statement statement = null;
+        ResultSet resultSet = null;
+        try {
+            statement = connection.createStatement();
+            String query = "SELECT total_quantity FROM Books WHERE book_id = " + bookId;
+            resultSet = statement.executeQuery(query);
+            if (resultSet.next()) {
+            	Quantity = resultSet.getInt("total_quantity");
+            }
+            } catch (SQLException e) {
+            e.printStackTrace();
+        } finally {
+            if (resultSet != null) {
+                try {
+                    resultSet.close();
+                } catch (SQLException e) {
+                    e.printStackTrace();
+                }
+            }
+            if (statement != null) {
+                try {
+                    statement.close();
+                } catch (SQLException e) {
+                    e.printStackTrace();
+                }
+            }
+
+        }
+    	
+            return Quantity;
+    }
+    
+    
+    public int getBookId(Connection connection, String bookName)
+    {
+    	
+    	int bookId=0;
+    	Statement statement = null;
+        ResultSet resultSet = null;
+        try {
+            statement = connection.createStatement();
+            String query = "SELECT book_id FROM Books WHERE book_name = '" + bookName + "'";
+            resultSet = statement.executeQuery(query);
+            if (resultSet.next()) {
+            	bookId = resultSet.getInt("book_id");
+            }
+            if(bookId==0)
+            {
+            	System.out.println("Book Name is incorrect");
+            	return bookId;
+            }
+            } catch (SQLException e) {
+            e.printStackTrace();
+        } finally {
+            if (resultSet != null) {
+                try {
+                    resultSet.close();
+                } catch (SQLException e) {
+                    e.printStackTrace();
+                }
+            }
+            if (statement != null) {
+                try {
+                    statement.close();
+                } catch (SQLException e) {
+                    e.printStackTrace();
+                }
+            }
+
+        }
+    	
+            return bookId;
+    }
+    
+    
+    
+    public boolean bookAlreadyExist(Connection connection, String BookName){
+    	
+    	int bookId=0;
+    	Statement statement = null;
+        ResultSet resultSet = null;
+        try {
+            statement = connection.createStatement();
+            String query = "SELECT book_id FROM Books WHERE book_name = '" + BookName + "'";
+            resultSet = statement.executeQuery(query);
+            if (resultSet.next()) {
+            	bookId = resultSet.getInt("book_id");
+            }
+            if(bookId==0)
+            {
+            	return false;
+            }
+            } catch (SQLException e) {
+            e.printStackTrace();
+        } finally {
+            if (resultSet != null) {
+                try {
+                    resultSet.close();
+                } catch (SQLException e) {
+                    e.printStackTrace();
+                }
+            }
+            if (statement != null) {
+                try {
+                    statement.close();
+                } catch (SQLException e) {
+                    e.printStackTrace();
+                }
+            }
+        }
+        return true;
+    }
+    
+    
+    
     
     public int getFine(Connection connection, String id) throws SQLException
     {
@@ -458,7 +579,103 @@ class Staff extends Student
 }
 
 
-class Librarian {
+class Librarian extends Staff {
+	
+	
+	private void addBook(Connection connection) {
+    Scanner scanner = new Scanner(System.in);
+    System.out.print("Enter a Book Name: ");
+    String bookName = scanner.nextLine();
+    // Check if book already exists
+    if (bookAlreadyExist(connection, bookName)) {
+        System.out.println("Book already exists.");
+        return;
+    }
+    System.out.print("Enter Author Name: ");
+    String bookAuthor = scanner.nextLine();
+    System.out.print("Enter Book Subject: ");
+    String bookSubject = scanner.nextLine();
+    System.out.print("Enter Book Quantity: ");
+    int bookQuantity = scanner.nextInt();
+
+    
+
+    // Validate book quantity
+    if (bookQuantity <= 0) {
+        System.out.println("Book quantity cannot be zero or negative.");
+        return;
+    }
+
+    try {
+        Statement statement = connection.createStatement();
+        String query = "INSERT INTO Books (book_name, book_author, book_subject, quantity, total_quantity) VALUES ('" + bookName + "', '" + bookAuthor + "', '" + bookSubject + "', " + bookQuantity + ", " + bookQuantity + ")";
+        int rowsAffected = statement.executeUpdate(query);
+        if (rowsAffected > 0) {
+            System.out.println("Book added successfully.");
+        } else {
+            System.out.println("Failed to add book.");
+        }
+    } catch (SQLException e) {
+        System.out.println("Error while adding book: " + e.getMessage());
+    } finally {
+        scanner.close(); // Close the scanner to release resources
+    }
+}
+
+
+	private void removeBook(Connection connection) {
+    
+    
+    
+    Scanner scanner = new Scanner(System.in);
+    try {
+        System.out.print("Enter a Book Name: ");
+        if (!scanner.hasNextLine()) {
+            System.out.println("No input provided.");
+            return;
+        }
+        String bookName = scanner.nextLine();
+        
+        if (!bookAlreadyExist(connection, bookName)) {
+            System.out.println("Book does not exist in this library.");
+            return;
+        }
+        int quantityOfBookRemaining = quantityOfBookRemaining(connection,getBookId(connection, bookName));
+        int totalQuantity = getTotalQuantity(connection,getBookId(connection, bookName));
+        if(quantityOfBookRemaining != totalQuantity)
+        {
+        	System.out.println("This Book is Issued by student so cannot be removed.");
+        	return;
+        }
+        System.out.print("Enter Author Name: ");
+    	String bookAuthor = scanner.nextLine();
+    	System.out.print("Enter Book Subject: ");
+    	String bookSubject = scanner.nextLine();
+        
+        
+        Statement statement = connection.createStatement();
+        String query = "DELETE FROM Books WHERE book_name = '" + bookName + "' AND book_author = '" + bookAuthor + "' AND book_subject = '" + bookSubject + "'";
+        int rowsAffected = statement.executeUpdate(query);
+        if (rowsAffected > 0) {
+            System.out.println("Book with name " + bookName + " deleted successfully.");
+        } else {
+            System.out.println("No book deleted Incorrect Author name or Subject.");
+        }
+    } catch (SQLException e) {
+        System.out.println("Error while deleting row: " + e.getMessage());
+    } finally {
+        scanner.close(); // Close the scanner to release resources
+    }
+}
+
+	
+	
+	
+	
+	
+	
+	
+	
     public static void main(String[] args) {
         Connection connection = null;
         try {
@@ -467,10 +684,8 @@ class Librarian {
             if (connection != null) {
                 Student student = new Student();
                 Staff s = new Staff();
-                s.issueBook(connection,"2022BIT045",3);
-                s.returnBook(connection,"2022BIT045",10);
-                s.returnBook(connection,"2022BIT045",3);
-                
+                Librarian l = new Librarian();
+                l.returnBook(connection,"2022BIT045",8);
             } else {
                 System.out.println("Failed to connect to the database!");
             }
@@ -488,6 +703,6 @@ class Librarian {
             }
         }
     }
-}
+    }
 
 
