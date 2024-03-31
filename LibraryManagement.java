@@ -14,6 +14,32 @@ class Student {
     public static final String URL = "jdbc:mysql://localhost:3306/Pratham";
     public static final String USER = "Pratham";
     public static final String PASSWORD = "Pratham@16";
+    
+    
+    
+    public boolean isValidStudentPassword(Connection connection,String studentId,String studentPassword){
+    	Statement statement = null;
+        ResultSet resultSet = null;
+
+        try {
+            statement = connection.createStatement();
+            String query = "SELECT student_password FROM Student WHERE student_id = '" + studentId + "'";
+            resultSet = statement.executeQuery(query);
+            if (resultSet.next()) {
+                String nameFromDb = resultSet.getString("student_password");
+                if (nameFromDb.equals(studentPassword)) {
+                    return true;
+                } else {
+                    return false;
+                }
+            } else {
+                return false;
+            }
+        } finally {
+            if (resultSet != null) resultSet.close();
+            if (statement != null) statement.close();
+        }
+    }
 
     public String getSerialNumber(Connection connection, String Id) {
 
@@ -614,6 +640,7 @@ class Student {
                 String phone = resultSet.getString("phone_no");
                 int issued = resultSet.getInt("books_issued");
                 int age = resultSet.getInt("student_age");
+                int fine = resultSet.getInt("student_fine");
 
                 System.out.println("Student Information:");
                 System.out.println("Student ID: " + studentId);
@@ -622,6 +649,7 @@ class Student {
                 System.out.println("Phone Number: " + phone);
                 System.out.println("Books Issued: " + issued);
                 System.out.println("Age: " + age);
+                System.out.println("Fine: " + fine);
             } else {
                 System.out.println("Student with ID '" + id + "' not found.");
             }
@@ -636,6 +664,21 @@ class Student {
 
 
 class Staff extends Student {
+
+
+	protected void repayFine(Connection connection, String Id)
+	{
+		
+		System.out.print("Enter Amount: ");
+        int repayamount = scanner.nextInt();
+        
+        int totalamount = getFine(connection,Id);
+        
+        int amount = totalamount - repayamount;
+		
+		String updateQuery = "UPDATE Student SET student_fine = "+ amount +"WHERE student_id = '" + Id + "'";
+        statement.executeUpdate(updateQuery);
+	}
 
     protected void addStudent(Connection connection) {
         Scanner scanner = new Scanner(System.in);
@@ -788,6 +831,108 @@ class Staff extends Student {
     protected void renewBook(Connection connection, String id, int bookId) throws SQLException {
         updateFine(connection, id, bookId);
     }
+    
+    
+    protected void removeStudent(Connection connection) throws SQLException {
+    	Scanner scanner = new Scanner(System.in);
+        try {
+            System.out.print("Enter Name: ");
+            String studentName = scanner.nextLine();
+
+            if (!studentNameMatches(connection, studentName)) {
+                System.out.println("Student with Name: " + studentName + " doesnot exists.");
+                return;
+            }
+
+            
+			System.out.print("Enter Student Id: ");
+            String studentId = scanner.nextLine();
+
+            Statement statement = connection.createStatement();
+            String query = "DELETE FROM Student WHERE name = '" + studentName + "' AND student_id = '" + studentId + "'";
+            String query1 = "DELETE FROM Issued WHERE name = '" + studentName + "' AND student_id = '" + studentId + "'";
+            statement.executeUpdate(query);
+            statement.executeUpdate(query1);
+            int rowsAffected = statement.executeUpdate(query1);
+            if (rowsAffected > 0) {
+                System.out.println("Student removed successfully.");
+            } else {
+                System.out.println("Failed to remove student.");
+            }
+        } catch (SQLException e) {
+            System.out.println("Error while adding student: " + e.getMessage());
+        } finally {
+            scanner.close();
+        }
+    	
+    	
+    }
+    
+    protected void printStaff(Connection connection) throws SQLException {
+        Statement statement = null;
+        ResultSet resultSet = null;
+
+        try {
+            statement = connection.createStatement();
+            resultSet = statement.executeQuery("SELECT staff_id, name, addr, phone_no, staff_pass, last_login, salary FROM Staff");
+
+            System.out.println("Staff Information:");
+			System.out.printf("%-8s | %-50s | %-20s | %-8s | %-20s | %-8s\n", "Staff ID", "Name", "Address", "phone_no", "Password", "Salary");
+			while (resultSet.next()) {
+    			String StaffId = resultSet.getString("staff_id");
+    			String Name = resultSet.getString("name");
+    			String Address = resultSet.getString("addr");
+    			String Phone = resultSet.getString("phone_no");
+    			String Password = resultSet.getString("staff_pass");
+    			int salary = resultSet.getInt("salary");
+
+    			System.out.printf("%-8s | %-50s | %-20s | %-8s | %-20s | %-8d\n", StaffId, Name, Address, Phone, Password, salary);
+			}
+        } finally {
+            if (resultSet != null) resultSet.close();
+            if (statement != null) statement.close();
+        }
+    }
+    
+    protected boolean isValidStaffPassword(Connection connection,String staffId,String staffPassword){
+    	Statement statement = null;
+        ResultSet resultSet = null;
+
+        try {
+            statement = connection.createStatement();
+            String query = "SELECT staff_pass FROM Staff WHERE staff_id = '" + staffId + "'";
+            resultSet = statement.executeQuery(query);
+            if (resultSet.next()) {
+                String nameFromDb = resultSet.getString("staff_pass");
+                if (nameFromDb.equals(staffPassword)) {
+                    return true;
+                } else {
+                    return false;
+                }
+            } else {
+                return false;
+            }
+        } finally {
+            if (resultSet != null) resultSet.close();
+            if (statement != null) statement.close();
+        }
+    }
+    
+    public boolean isValidStaffId(Connection connection, String id) throws SQLException {
+        try (Statement statement = connection.createStatement()) {
+            try (ResultSet resultSet = statement.executeQuery("SELECT staff_id FROM Student WHERE staff_id = '" + id + "'")) {
+                if (resultSet.next()) {
+                    String c = resultSet.getString("staff_id");
+                    if (c.equals(id)) {
+                        return true;
+                    }
+                }
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+        return false;
+    }
 
 }
 
@@ -795,7 +940,70 @@ class Staff extends Student {
 
 
 class Librarian extends Staff {
+	
+	private String getStaffId(Connection connection, String name) throws SQLException {
+        Statement statement = null;
+        ResultSet resultSet = null;
+        
+        String staffId = "";
 
+        try {
+            statement = connection.createStatement();
+            String query = "SELECT staff_id FROM Staff WHERE name = '" + name + "'";
+            resultSet = statement.executeQuery(query);
+            if (resultSet.next()) {
+                staffId = resultSet.getString("staff_id");
+                return staffId;
+            } else {
+                return staffId;
+            }
+        } finally {
+            if (resultSet != null) resultSet.close();
+            if (statement != null) statement.close();
+        }
+    }
+    
+	
+	
+	private void removeStaff(Connection connection) {
+        Scanner scanner = new Scanner(System.in);
+        try {
+            System.out.print("Enter Name: ");
+            String staffName = scanner.nextLine();
+
+            if (!staffNameMatches(connection, staffName)) {
+                System.out.println("Staff with Name: " + staffName + " Does Not exists.");
+                return;
+            }
+			
+			System.out.print("Enter Staff Id: ");
+            String staffId = scanner.nextLine();
+			
+			String staffId1 = getStaffId(connection,staffName);
+			
+			if(staffId.equals(staffId1)){
+			
+            	Statement statement = connection.createStatement();
+            	String query = "DELETE FROM Staff WHERE staff_id = '" + staffId + "' AND name = '" + staffName + "'";
+
+            	int rowsAffected = statement.executeUpdate(query);
+            	if (rowsAffected > 0) {
+            	    System.out.println("Staff Removed successfully.");
+            	} else {
+            	    System.out.println("Failed to Remove staff.");
+            	}
+        	}
+        	else{
+        		System.out.println("Staff Id Incorrect");
+        	}
+        } catch (SQLException e) {
+            System.out.println("Error while adding student: " + e.getMessage());
+        } finally {
+            scanner.close();
+        }
+    }
+	
+	
     private boolean staffNameMatches(Connection connection, String name) throws SQLException {
         Statement statement = null;
         ResultSet resultSet = null;
@@ -1092,12 +1300,14 @@ class Librarian extends Staff {
     public static void main(String[] args) {
         Connection connection = null;
         try {
-            Librarian l = new Librarian();
+            int cp = 0;
             Class.forName("com.mysql.cj.jdbc.Driver");
             connection = DriverManager.getConnection(Student.URL, Student.USER, Student.PASSWORD);
             if (connection != null) {
                 String User = "";
+                int bookId =0;
                 String UserPass = "";
+                String studentId = "";
                 int loginAttempts = 0;
                 Scanner scanner = new Scanner(System.in);
                 int Choice = 0;
@@ -1134,34 +1344,311 @@ class Librarian extends Staff {
                                 }
                             } while (!User.equals(LibrarianUsername) || !UserPass.equals(LibrarianPassword));
                             if (User.equals(LibrarianUsername) && UserPass.equals(LibrarianPassword)) {
-                                clearScreen();
-                                System.out.println("Login successful!");
-                                System.out.println("Hello, Librarian!");
-                                System.out.println("What You Would Like to do:");
-                                System.out.println("1.Add Staff");
-                                System.out.println("2.Remove Staff");
-                                System.out.println("3.Add Book");
-                                System.out.println("4.Remove Book");
-                                System.out.println("5.Add Student");
-                                System.out.println("6.Remove Student");
-                                System.out.println("7.Available Books In Library");
-                                System.out.println("8.Get Student Information");
-                                System.out.println("9.Get Staff Information");
-                                System.out.println("10.Issue a Book");
-                                System.out.println("11.Return a Book");
-                                System.out.println("12.Renew a Book");
-                                System.out.println("13.Get Student Fine");
-                                System.out.println("14.To Exit");
-
-                                l.addStaff(connection);
-
+                               	clearScreen();
+                               	System.out.println("Login successful!");
+                               	System.out.println("Hello, Librarian!");
+                               	Librarian l = new Librarian();
+                                do 
+                                {
+                                	clearScreen();
+                                	System.out.println("What You Would Like to do:");
+                                	System.out.println("1.Add Staff");
+                                	System.out.println("2.Remove Staff");
+                                	System.out.println("3.Add Book");
+                                	System.out.println("4.Remove Book");
+                                	System.out.println("5.Add Student");
+                                	System.out.println("6.Remove Student");
+                                	System.out.println("7.Available Books In Library");
+                                	System.out.println("8.Get Student Information");
+                                	System.out.println("9.Get Staff Information");
+                                	System.out.println("10.Issue a Book");
+                                	System.out.println("11.Return a Book");
+                                	System.out.println("12.Renew a Book");
+                                	System.out.println("13.Get Student Fine");
+                                	System.out.println("14.Pay Student Fine");
+                              	    System.out.println("15.To Exit");
+                             	  	System.out.print("Enter Your Choice:");
+									cp = scanner.nextInt();
+									scanner.nextLine();
+            						switch (cp) {
+                						case 1:
+                						    l.addStaff(connection);
+                						    break;
+                						case 2:
+                						    l.removeStaff(connection);
+                						    break;
+                						case 3:
+                						    l.addBook(connection);
+                						    break;
+                						case 4:
+                    						l.removeBook(connection);
+                    						break;
+                						case 5:
+                						    l.addStudent(connection);
+                    						break;
+                						case 6:
+                						    l.removeStudent(connection);
+                						    break;
+                						case 7:
+                						    l.printBooks(connection);
+                						    break;
+                						case 8:
+                							System.out.print("Enter Student Id :");
+                                			studentId = scanner.nextLine();
+                                			if(!isValidStudentId(connection,studentId)){
+                                				System.out.println("Student id is Invalid");
+                						    	break;
+                						    }
+                						    l.studentinfo(connection,studentId);
+                						    break;
+                						case 9:
+                						    printStaff(connection);
+                						    break;
+                						case 10:
+                							System.out.print("Enter Student Id :");
+                                			studentId = scanner.nextLine();
+                                			if(!isValidStudentId(connection,studentId)){
+                                				System.out.println("Student id is Invalid");
+                						    	break;
+                						    }
+                						    System.out.print("Enter book Id :");
+                                			bookId = scanner.nextInt();
+                                			if(!isBookIssued(connection,studentId,bookId)){
+                                				System.out.println("This Book is not issued by student");
+                						    	break;
+                						    }
+                    						l.issueBook(connection,studentId,bookId);
+                    						break;
+                						case 11:
+                							System.out.print("Enter Student Id :");
+                                			studentId = scanner.nextLine();
+                                			if(!isValidStudentId(connection,studentId)){
+                                				System.out.println("Student id is Invalid");
+                						    	break;
+                						    }
+                						    System.out.print("Enter book Id :");
+                                			bookId = scanner.nextInt();
+                                			if(!isBookIssued(connection,studentId,bookId)){
+                                				System.out.println("This Book is not issued by student");
+                						    	break;
+                						    }
+                						    l.returnBook(connection,studentId,bookId);
+                    						break;
+                						case 12:
+                							System.out.print("Enter Student Id :");
+                                			studentId = scanner.nextLine();
+                                			if(!isValidStudentId(connection,studentId)){
+                                				System.out.println("Student id is Invalid");
+                						    	break;
+                						    }
+                						    System.out.print("Enter book Id :");
+                                			bookId = scanner.nextInt();
+                                			if(!isBookIssued(connection,studentId,bookId)){
+                                				System.out.println("This Book is not issued by student");
+                						    	break;
+                						    }
+                						    l.renewBook(connection,studentId,bookId);
+                						    break;
+                						case 13:
+                    						System.out.print("Enter Student Id :");
+                                			studentId = scanner.nextLine();
+                                			if(!isValidStudentId(connection,studentId)){
+                                				System.out.println("Student id is Invalid");
+                						    	break;
+                						    }
+                						    l.getFine(connection,studentId);
+                    						break;
+                						case 14:
+                						    System.out.print("Enter Student Id :");
+                                			studentId = scanner.nextLine();
+                                			if(!isValidStudentId(connection,studentId)){
+                                				System.out.println("Student id is Invalid");
+                						    	break;
+                						    }
+                						    l.repayFine(connection,studentId);
+                    						break;
+                						case 15:
+                						    Choice = 0;
+                						    System.out.println("GoodBye Librarian!");
+                						    break;
+                						default:
+                    						System.out.println("Enter Valid Choice! ");
+                   							break;
+            						}
+        						} while (cp != 15);
+        						
                             }
                             Choice = 0;
                             break;
-                    }
-                } while (Choice != 0);
-
-
+                        case 2:
+                        	String staffPassword = "";
+                        	String staffId = "";
+                        	int cp = 0;
+                        	System.out.print("Enter Staff Id :");
+                            staffId = scanner.nextLine();
+                            if(!isValidStaffId(connection,studentId)){
+                            	System.out.println("Staff id is Invalid");
+                				break;
+                			}
+                			System.out.print("Enter Staff Password :");
+                            staffPassword = scanner.nextLine();
+                			if(!isValidStaffPassword(connection,staffId,staffPassword)){
+                            	System.out.println("Staff Password is Invalid");
+                				break;
+                			}
+                        	Staff staff = new Staff();
+                        	do 
+                                {
+                                	clearScreen();
+                                	System.out.println("What You Would Like to do:");
+                                	
+                                	System.out.println("1.Add Student");
+                                	System.out.println("2.Remove Student");
+                                	System.out.println("3.Available Books In Library");
+                                	System.out.println("4.Get Student Information");
+                                	System.out.println("5.Issue a Book");
+                                	System.out.println("6.Return a Book");
+                                	System.out.println("7.Renew a Book");
+                                	System.out.println("8.Get Student Fine");
+                                	System.out.println("9.Pay Student Fine");
+                              	    System.out.println("10.To Exit");
+                             	  	System.out.print("Enter Your Choice:");
+									cp = scanner.nextInt();
+                        	switch (cp)
+                        	{
+                        				case 1:
+                						    staff.addStudent(connection);
+                    						break;
+                						case 2:
+                						    staff.removeStudent(connection);
+                						    break;
+                						case 3:
+                						    staff.printBooks(connection);
+                						    break;
+                						case 4:
+                							System.out.print("Enter Student Id :");
+                                			studentId = scanner.nextLine();
+                                			if(!isValidStudentId(connection,studentId)){
+                                				System.out.println("Student id is Invalid");
+                						    	break;
+                						    }
+                						    staff.studentinfo(connection,studentId);
+                						    break;
+                						case 5:
+                							System.out.print("Enter Student Id :");
+                                			studentId = scanner.nextLine();
+                                			if(!isValidStudentId(connection,studentId)){
+                                				System.out.println("Student id is Invalid");
+                						    	break;
+                						    }
+                						    System.out.print("Enter book Id :");
+                                			bookId = scanner.nextInt();
+                    						staff.issueBook(connection,studentId,bookId);
+                    						break;
+                						case 6:
+                							System.out.print("Enter Student Id :");
+                                			studentId = scanner.nextLine();
+                                			if(!isValidStudentId(connection,studentId)){
+                                				System.out.println("Student id is Invalid");
+                						    	break;
+                						    }
+                						    System.out.print("Enter book Id :");
+                                			bookId = scanner.nextInt();
+                                			if(!isBookIssued(connection,studentId,bookId)){
+                                				System.out.println("This Book is not issued by student");
+                						    	break;
+                						    }
+                						    staff.returnBook(connection,studentId,bookId);
+                    						break;
+                						case 7:
+                							System.out.print("Enter Student Id :");
+                                			studentId = scanner.nextLine();
+                                			if(!isValidStudentId(connection,studentId)){
+                                				System.out.println("Student id is Invalid");
+                						    	break;
+                						    }
+                						    System.out.print("Enter book Id :");
+                                			bookId = scanner.nextInt();
+                                			if(!isBookIssued(connection,studentId,bookId)){
+                                				System.out.println("This Book is not issued by student");
+                						    	break;
+                						    }
+                						    staff.renewBook(connection,studentId,bookId);
+                						    break;
+                						case 8:
+                    						System.out.print("Enter Student Id :");
+                                			studentId = scanner.nextLine();
+                                			if(!isValidStudentId(connection,studentId)){
+                                				System.out.println("Student id is Invalid");
+                						    	break;
+                						    }
+                						    staff.getFine(connection,studentId);
+                    						break;
+                						case 9:
+                						    System.out.print("Enter Student Id :");
+                                			studentId = scanner.nextLine();
+                                			if(!isValidStudentId(connection,studentId)){
+                                				System.out.println("Student id is Invalid");
+                						    	break;
+                						    }
+                						    staff.repayFine(connection,studentId);
+                    						break;
+                						case 10:
+                						    Choice = 0;
+                						    System.out.println("GoodBye Librarian!");
+                						    break;
+                						default:
+                    						System.out.println("Enter Valid Choice! ");
+                   							break;
+            						}
+                        	Choice =0;
+                        	
+                        	break;
+                        case 3:
+                        	String studentPassword = "";
+                        	String studentId = "";
+                        	int cp = 0;
+                        	System.out.print("Enter Student Id :");
+                            studentId = scanner.nextLine();
+                            if(!isValidStudentId(connection,studentId)){
+                            	System.out.println("Student id is Invalid");
+                				break;
+                			}
+                			System.out.print("Enter Student Password :");
+                            studentPassword = scanner.nextLine();
+                			if(!isValidStudentPassword(connection,studentId,studentPassword)){
+                            	System.out.println("Student Password is Invalid");
+                				break;
+                			}
+                			Student student = new Student();
+                			do 
+                            {
+                            	clearScreen();
+                                System.out.println("1.Available Books In Library");
+                                System.out.println("2.Get Student Information");
+                                System.out.println("0.To Exit");
+                             	System.out.print("Enter Your Choice:");
+								cp = scanner.nextInt();
+								scanner.nextLine();
+            					switch (cp) {
+                					case 1:
+                						student.printBooks(connection);
+                        				break;
+                        			case 2:
+                						student.studentinfo(connection,studentId);
+                        				break;
+                        			case 0:
+                						Choice = 0;
+                						System.out.println("GoodBye Student!");
+                						break;
+                        			default:
+                        				System.out.println("Enter Valid Choice! ");
+                        				break;
+                    			}
+                    		} while(cp != 0);
+                    		Choice =0;
+                    		break;
+              	} while (Choice != 0);
             } else {
                 System.out.println("Failed to connect to the database!");
             }
