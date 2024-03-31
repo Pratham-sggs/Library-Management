@@ -832,13 +832,187 @@ class Staff extends Student
     protected void renewBook(Connection connection, String id, int bookId) throws SQLException {
                updateFine(connection,id,bookId);
     	}
+    	
+    	
 }
 
 
 class Librarian extends Staff {
 	
-	private static final String LibrarianUsername = "ZodiacLibrary"
-	private static final String LibrarianPassword = "Zodiac@1897"
+	
+	
+	
+	
+	private boolean staffNameMatches(Connection connection,String name) throws SQLException {
+		Statement statement = null;
+    ResultSet resultSet = null;
+
+    try {
+        statement = connection.createStatement();
+        String query = "SELECT name FROM Staff WHERE name = '" + name + "'";
+        resultSet = statement.executeQuery(query);
+        if (resultSet.next()) {
+            String nameFromDb = resultSet.getString("name");
+            if (nameFromDb.equals(name)) {
+                return true;
+            } else {
+                return false;
+            }
+        } else {
+            return false;
+        }
+    } finally {
+        if (resultSet != null) resultSet.close();
+        if (statement != null) statement.close();
+    }
+		
+	}
+	
+	
+	
+	private String getStaffIssueNumber(Connection connection)
+	{
+		int Quantity = 0;
+    	Statement statement = null;
+        ResultSet resultSet = null;
+        try {
+            statement = connection.createStatement();
+            String query = "SELECT Number FROM LibraryStaffIssued ";
+            resultSet = statement.executeQuery(query);
+            if (resultSet.next()) {
+            	Quantity = resultSet.getInt("Number");
+            }		
+            		if(Quantity<999){
+            		Quantity = Quantity + 1;
+            		String updateQuery2 = "UPDATE LibraryStaffIssued SET Number =" + Quantity;
+                    statement.executeUpdate(updateQuery2);
+            		String i = Integer.toString(Quantity);
+            		return i;
+            		}
+            		if(Quantity>=999)
+            		{
+            			Quantity = 0;
+            			Quantity = Quantity + 1;
+            			String updateQuery2 = "UPDATE LibraryStaffIssued SET Number =" + Quantity;
+                    	statement.executeUpdate(updateQuery2);
+            			String i = Integer.toString(Quantity);
+            			return i;
+            		}
+            		
+            		
+            } catch (SQLException e) {
+            e.printStackTrace();
+        } finally {
+            if (resultSet != null) {
+                try {
+                    resultSet.close();
+                } catch (SQLException e) {
+                    e.printStackTrace();
+                }
+            }
+            if (statement != null) {
+                try {
+                    statement.close();
+                } catch (SQLException e) {
+                    e.printStackTrace();
+                }
+            }
+	}
+		return "0";
+	}
+	
+	private String getRandomStaffId(Connection connection){
+		String departmentId = "LIB";
+		String date = getTodaysdate();
+    		String year = date.substring(0, 4);
+    		
+    		String SerialNumber = getStaffIssueNumber(connection);
+    		int SerialNo = Integer.parseInt(SerialNumber);
+    		if(SerialNo < 10 && SerialNo != 0)
+    		{
+    			return "S"+year+departmentId+"00"+SerialNumber;
+    		}
+    		if(SerialNo<=99 && SerialNo>=10)
+    		{
+    			return "S"+year+departmentId+"0"+SerialNumber;
+    		}
+    		if(SerialNo<=999 && SerialNo>=100)
+    		{
+    			return "S"+year+departmentId+SerialNumber;
+    		}
+    		return "";
+		
+	}
+	
+	
+	
+	
+	private void addStaff(Connection connection){
+		
+		
+		
+		Scanner scanner = new Scanner(System.in);
+    try {
+        System.out.print("Enter Name: ");
+        String staffName = scanner.nextLine();
+
+        if (staffNameMatches(connection, staffName)) {
+            System.out.println("Staff with Name: " + staffName + " already exists.");
+            return;
+        }
+
+        System.out.print("Enter Address: ");
+        String staffAddress = scanner.nextLine();
+
+        System.out.print("Enter Phone Number: ");
+        String staffPhone = scanner.nextLine();
+        
+        System.out.print("Enter Salary: ");
+        int staffSalary = scanner.nextInt();
+	scanner.nextLine();
+        int a = 0;
+        String staffPassword = "";
+        while (a == 0) {
+            System.out.print("Set Password: ");
+            staffPassword = scanner.nextLine();
+            System.out.print("Enter Password again: ");
+            String staffPassword1 = scanner.nextLine();
+            if (staffPassword.equals(staffPassword1)) {
+                a = 1;
+            } else {
+                a = 0;
+                System.out.println("Both passwords should match");
+            }
+        }
+
+        String staffId = getRandomStaffId(connection);
+        
+        String stafflogin = getTodaysdate();
+
+        Statement statement = connection.createStatement();
+        String query = "INSERT INTO Staff (staff_id, name, addr, phone_no, staff_pass, Salary, last_login) VALUES ('" + staffId + "', '" + staffName + "', '" + staffAddress + "', '" + staffPhone + "','" + staffPassword + "', '" + staffSalary + "','" + stafflogin + "')";
+
+        
+        int rowsAffected = statement.executeUpdate(query);
+        if (rowsAffected > 0) {
+            System.out.println("Staff added successfully.");
+        } else {
+            System.out.println("Failed to add staff.");
+        }
+    } catch (SQLException e) {
+        System.out.println("Error while adding student: " + e.getMessage());
+    } finally {
+        scanner.close();
+    }
+		
+		
+	}
+	
+	
+	
+	
+	
+	
 	
 	
 	
@@ -930,24 +1104,154 @@ class Librarian extends Staff {
 }
 
 	
+	public static void clearScreen() {
+    System.out.print("\033[H\033[2J");
+    System.out.flush();
+}
 	
 	
+	private static String getLibrarianId(Connection connection)
+	{
+		Statement statement = null;
+        ResultSet resultSet = null;
+        try {
+            statement = connection.createStatement();
+            String query = "SELECT LibrarianId FROM Librarian";
+            resultSet = statement.executeQuery(query);
+            if (resultSet.next()) {
+            	String a = resultSet.getString("LibrarianId");
+            	return a;
+            }
+            } catch (SQLException e) {
+            e.printStackTrace();
+        } finally {
+            if (resultSet != null) {
+                try {
+                    resultSet.close();
+                } catch (SQLException e) {
+                    e.printStackTrace();
+                }
+            }
+            if (statement != null) {
+                try {
+                    statement.close();
+                } catch (SQLException e) {
+                    e.printStackTrace();
+                }
+            }
+        }
+        return "";
+	}
 	
-	
-	
-	
-	
+	private static String getLibrarianPass(Connection connection)
+	{
+		Statement statement = null;
+        ResultSet resultSet = null;
+        try {
+            statement = connection.createStatement();
+            String query = "SELECT LibrarianPass FROM Librarian";
+            resultSet = statement.executeQuery(query);
+            if (resultSet.next()) {
+            	String a = resultSet.getString("LibrarianPass");
+            	return a;
+            }
+            } catch (SQLException e) {
+            e.printStackTrace();
+        } finally {
+            if (resultSet != null) {
+                try {
+                    resultSet.close();
+                } catch (SQLException e) {
+                    e.printStackTrace();
+                }
+            }
+            if (statement != null) {
+                try {
+                    statement.close();
+                } catch (SQLException e) {
+                    e.printStackTrace();
+                }
+            }
+        }
+        return "";
+	}
+
     public static void main(String[] args) {
         Connection connection = null;
         try {
+        	Librarian l = new Librarian();
             Class.forName("com.mysql.cj.jdbc.Driver");
             connection = DriverManager.getConnection(Student.URL, Student.USER, Student.PASSWORD);
             if (connection != null) {
-                
+            	String User = "";
+            	String UserPass = "";
+            	int loginAttempts = 0;
+                Scanner scanner = new Scanner(System.in); 
                 int Choice = 0;
+                String LibrarianUsername = getLibrarianId(connection);
+                String LibrarianPassword = getLibrarianPass(connection);
                 System.out.println("1.Librarian Login");
                 System.out.println("2.Staff Login");
                 System.out.println("3.Student Login");
+                System.out.println("0.Close The Program");
+                System.out.print("Enter Your Choice :");
+                Choice = scanner.nextInt();
+                scanner.nextLine();
+                do { 
+                		
+                		switch (Choice) {
+    				case 1:
+        				do {
+        				
+            				System.out.print("Enter Librarian Username :");
+            				User = scanner.nextLine();
+            				System.out.print("Enter Librarian Password :");
+            				UserPass = scanner.nextLine();
+            				clearScreen();
+            				loginAttempts = loginAttempts + 1;
+            				if((!User.equals(LibrarianUsername) || !UserPass.equals(LibrarianPassword)) && loginAttempts==3)
+            				{
+            					System.out.println("You Failed to Login 3 times so you have to restart application!");
+            					System.out.println("GoodBye!!");
+            					Choice=0;
+            					break;
+            				}
+            				if(!User.equals(LibrarianUsername) || !UserPass.equals(LibrarianPassword))
+            				{
+            					int a = 3-loginAttempts;
+            					System.out.println("Only " + a + " Attempts left!");
+            				}
+        				} while (!User.equals(LibrarianUsername) || !UserPass.equals(LibrarianPassword));
+        				if(User.equals(LibrarianUsername) && UserPass.equals(LibrarianPassword))
+            				{
+            					clearScreen();
+            					System.out.println("Login successful!");
+            					System.out.println("Hello, Librarian!");
+            					System.out.println("What You Would Like to do:");
+            					System.out.println("1.Add Staff");
+            					System.out.println("2.Remove Staff");
+            					System.out.println("3.Add Book");
+            					System.out.println("4.Remove Book");
+            					System.out.println("5.Add Student");
+            					System.out.println("6.Remove Student");
+            					System.out.println("7.Available Books In Library");
+            					System.out.println("8.Get Student Information");
+            					System.out.println("9.Get Staff Information");
+            					System.out.println("10.Issue a Book");
+            					System.out.println("11.Return a Book");
+            					System.out.println("12.Renew a Book");
+            					System.out.println("13.Get Student Fine");
+            					System.out.println("14.To Exit");
+            					
+            					
+            					
+            					l.addStaff(connection);
+            					
+            				}
+        				Choice = 0;
+        				break;
+					}
+                }while(Choice != 0);
                 
                 
                 
