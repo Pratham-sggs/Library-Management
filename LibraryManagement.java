@@ -8,45 +8,42 @@ import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.text.ParseException;
 import java.util.Scanner;
+
+
 class Student {
     public static final String URL = "jdbc:mysql://localhost:3306/Pratham";
     public static final String USER = "Pratham";
     public static final String PASSWORD = "Pratham@16";
-    
-    
-    
-    public String getSerialNumber(Connection connection,String Id)
-    {
-    	
-    	int Quantity = 0;
-    	Statement statement = null;
+
+    public String getSerialNumber(Connection connection, String Id) {
+
+        int Quantity = 0;
+        Statement statement = null;
         ResultSet resultSet = null;
         try {
             statement = connection.createStatement();
             String query = "SELECT students_issued FROM Department WHERE department = '" + Id + "'";
             resultSet = statement.executeQuery(query);
             if (resultSet.next()) {
-            	Quantity = resultSet.getInt("students_issued");
-            }		
-            		if(Quantity<999){
-            		Quantity = Quantity + 1;
-            		String updateQuery2 = "UPDATE Department SET students_issued =" + Quantity + " WHERE department = '" + Id + "'";
-                    statement.executeUpdate(updateQuery2);
-            		String i = Integer.toString(Quantity);
-            		return i;
-            		}
-            		if(Quantity>=999)
-            		{
-            			Quantity = 0;
-            			Quantity = Quantity + 1;
-            			String updateQuery2 = "UPDATE Department SET students_issued =" + Quantity + " WHERE department = '" + Id + "'";
-                    	statement.executeUpdate(updateQuery2);
-            			String i = Integer.toString(Quantity);
-            			return i;
-            		}
-            		
-            		
-            } catch (SQLException e) {
+                Quantity = resultSet.getInt("students_issued");
+            }
+            if (Quantity < 999) {
+                Quantity = Quantity + 1;
+                String updateQuery2 = "UPDATE Department SET students_issued =" + Quantity + " WHERE department = '" + Id + "'";
+                statement.executeUpdate(updateQuery2);
+                String i = Integer.toString(Quantity);
+                return i;
+            }
+            if (Quantity >= 999) {
+                Quantity = 0;
+                Quantity = Quantity + 1;
+                String updateQuery2 = "UPDATE Department SET students_issued =" + Quantity + " WHERE department = '" + Id + "'";
+                statement.executeUpdate(updateQuery2);
+                String i = Integer.toString(Quantity);
+                return i;
+            }
+
+        } catch (SQLException e) {
             e.printStackTrace();
         } finally {
             if (resultSet != null) {
@@ -65,99 +62,84 @@ class Student {
             }
 
         }
-    	
-    	
-    	
-    	
-    	return "0";
-    	
-    	
-    	
-    	
-    	
-    }
-    
-    public String getRandomStudentId(Connection connection){
-    	
-    	Scanner scanner = new Scanner(System.in);
-    	System.out.println("1.Information Technology");
-    	System.out.println("2.Computer Science and Engineering");
-    	System.out.println("3.Electronics and Telecommunication Engineering");
-    	System.out.println("4.Instrumentation Engineering");
-    	System.out.println("5.Electrical Engineering");
-    	System.out.println("6.Chemical Engineering");
-    	System.out.println("7.Civil Engineering");
-    	System.out.println("8.Textile Technology");
-    	System.out.println("9.Production Engineering");
-    	System.out.println("10.Mechanical Engineering");
-    	System.out.println("Enter Your Department Number:");
-    	int Choice = scanner.nextInt();
-    	int Department =0;
-    	String departmentId = "";
-    	
 
-	do {
-    	switch (Choice) {
-        	case 1:
-            	departmentId = "BIT";
-            	break;
-        	case 2:
-            	departmentId = "BCS";
-            	break;
-        	case 3 :
-            	departmentId = "BEC";
-            	break;
-        	case  4 :
-        	    departmentId = "BIN";
-        	    break;
-        	case  5 :
-        	    departmentId = "BEL";
-        	    break;
-        	case 6 :
-        	    departmentId = "BCH";
-        	    break;
-       		case  7 :
-        	    departmentId = "BCE";
-        	    break;
-        	case 8 :
-        	    departmentId = "BTT";
-       	        break;
-        	case  9 :
-            	departmentId = "BPR";
-            	break;
-        	case 10 :
-            	departmentId = "BME";
-            	break;
-        	default:
-            	System.out.println("Enter Valid Choice! ");
-            	break;
-    	}
-	} while (departmentId.isEmpty());
-			
-			
-    		
-    		String date = getTodaysdate();
-    		String year = date.substring(0, 4);
-    		
-    		String SerialNumber = getSerialNumber(connection,departmentId);
-    		int SerialNo = Integer.parseInt(SerialNumber);
-    		if(SerialNo < 10 && SerialNo != 0)
-    		{
-    			return year+departmentId+"00"+SerialNumber;
-    		}
-    		if(SerialNo<=99 && SerialNo>=10)
-    		{
-    			return year+departmentId+"0"+SerialNumber;
-    		}
-    		if(SerialNo<=999 && SerialNo>=100)
-    		{
-    			return year+departmentId+SerialNumber;
-    		}
-    		return "";
+        return "0";
+
     }
-    
-    
-    
+
+    public String getRandomStudentId(Connection connection) {
+
+        Scanner scanner = new Scanner(System.in);
+        System.out.println("1.Information Technology");
+        System.out.println("2.Computer Science and Engineering");
+        System.out.println("3.Electronics and Telecommunication Engineering");
+        System.out.println("4.Instrumentation Engineering");
+        System.out.println("5.Electrical Engineering");
+        System.out.println("6.Chemical Engineering");
+        System.out.println("7.Civil Engineering");
+        System.out.println("8.Textile Technology");
+        System.out.println("9.Production Engineering");
+        System.out.println("10.Mechanical Engineering");
+        System.out.println("Enter Your Department Number:");
+        int Choice = scanner.nextInt();
+        int Department = 0;
+        String departmentId = "";
+
+        do {
+            switch (Choice) {
+                case 1:
+                    departmentId = "BIT";
+                    break;
+                case 2:
+                    departmentId = "BCS";
+                    break;
+                case 3:
+                    departmentId = "BEC";
+                    break;
+                case 4:
+                    departmentId = "BIN";
+                    break;
+                case 5:
+                    departmentId = "BEL";
+                    break;
+                case 6:
+                    departmentId = "BCH";
+                    break;
+                case 7:
+                    departmentId = "BCE";
+                    break;
+                case 8:
+                    departmentId = "BTT";
+                    break;
+                case 9:
+                    departmentId = "BPR";
+                    break;
+                case 10:
+                    departmentId = "BME";
+                    break;
+                default:
+                    System.out.println("Enter Valid Choice! ");
+                    break;
+            }
+        } while (departmentId.isEmpty());
+
+        String date = getTodaysdate();
+        String year = date.substring(0, 4);
+
+        String SerialNumber = getSerialNumber(connection, departmentId);
+        int SerialNo = Integer.parseInt(SerialNumber);
+        if (SerialNo < 10 && SerialNo != 0) {
+            return year + departmentId + "00" + SerialNumber;
+        }
+        if (SerialNo <= 99 && SerialNo >= 10) {
+            return year + departmentId + "0" + SerialNumber;
+        }
+        if (SerialNo <= 999 && SerialNo >= 100) {
+            return year + departmentId + SerialNumber;
+        }
+        return "";
+    }
+
     public String getStudentName(Connection connection, String id) throws SQLException {
         Statement statement = null;
         ResultSet resultSet = null;
@@ -179,50 +161,43 @@ class Student {
         }
         return name;
     }
-    
-    
-    
-    public boolean studentNameMatches(Connection connection, String name) throws SQLException {
-    Statement statement = null;
-    ResultSet resultSet = null;
 
-    try {
-        statement = connection.createStatement();
-        String query = "SELECT name FROM Student WHERE name = '" + name + "'";
-        resultSet = statement.executeQuery(query);
-        if (resultSet.next()) {
-            String nameFromDb = resultSet.getString("name");
-            if (nameFromDb.equals(name)) {
-                return true;
+    public boolean studentNameMatches(Connection connection, String name) throws SQLException {
+        Statement statement = null;
+        ResultSet resultSet = null;
+
+        try {
+            statement = connection.createStatement();
+            String query = "SELECT name FROM Student WHERE name = '" + name + "'";
+            resultSet = statement.executeQuery(query);
+            if (resultSet.next()) {
+                String nameFromDb = resultSet.getString("name");
+                if (nameFromDb.equals(name)) {
+                    return true;
+                } else {
+                    return false;
+                }
             } else {
                 return false;
             }
-        } else {
-            return false;
+        } finally {
+            if (resultSet != null) resultSet.close();
+            if (statement != null) statement.close();
         }
-    } finally {
-        if (resultSet != null) resultSet.close();
-        if (statement != null) statement.close();
     }
-}
 
-    
-    
-    
-    
-    public int getTotalQuantity(Connection connection, int bookId)
-    {	
-    	int Quantity =0;
-    	Statement statement = null;
+    public int getTotalQuantity(Connection connection, int bookId) {
+        int Quantity = 0;
+        Statement statement = null;
         ResultSet resultSet = null;
         try {
             statement = connection.createStatement();
             String query = "SELECT total_quantity FROM Books WHERE book_id = " + bookId;
             resultSet = statement.executeQuery(query);
             if (resultSet.next()) {
-            	Quantity = resultSet.getInt("total_quantity");
+                Quantity = resultSet.getInt("total_quantity");
             }
-            } catch (SQLException e) {
+        } catch (SQLException e) {
             e.printStackTrace();
         } finally {
             if (resultSet != null) {
@@ -241,30 +216,27 @@ class Student {
             }
 
         }
-    	
-            return Quantity;
+
+        return Quantity;
     }
-    
-    
-    public int getBookId(Connection connection, String bookName)
-    {
-    	
-    	int bookId=0;
-    	Statement statement = null;
+
+    public int getBookId(Connection connection, String bookName) {
+
+        int bookId = 0;
+        Statement statement = null;
         ResultSet resultSet = null;
         try {
             statement = connection.createStatement();
             String query = "SELECT book_id FROM Books WHERE book_name = '" + bookName + "'";
             resultSet = statement.executeQuery(query);
             if (resultSet.next()) {
-            	bookId = resultSet.getInt("book_id");
+                bookId = resultSet.getInt("book_id");
             }
-            if(bookId==0)
-            {
-            	System.out.println("Book Name is incorrect");
-            	return bookId;
+            if (bookId == 0) {
+                System.out.println("Book Name is incorrect");
+                return bookId;
             }
-            } catch (SQLException e) {
+        } catch (SQLException e) {
             e.printStackTrace();
         } finally {
             if (resultSet != null) {
@@ -283,29 +255,26 @@ class Student {
             }
 
         }
-    	
-            return bookId;
+
+        return bookId;
     }
-    
-    
-    
-    public boolean bookAlreadyExist(Connection connection, String BookName){
-    	
-    	int bookId=0;
-    	Statement statement = null;
+
+    public boolean bookAlreadyExist(Connection connection, String BookName) {
+
+        int bookId = 0;
+        Statement statement = null;
         ResultSet resultSet = null;
         try {
             statement = connection.createStatement();
             String query = "SELECT book_id FROM Books WHERE book_name = '" + BookName + "'";
             resultSet = statement.executeQuery(query);
             if (resultSet.next()) {
-            	bookId = resultSet.getInt("book_id");
+                bookId = resultSet.getInt("book_id");
             }
-            if(bookId==0)
-            {
-            	return false;
+            if (bookId == 0) {
+                return false;
             }
-            } catch (SQLException e) {
+        } catch (SQLException e) {
             e.printStackTrace();
         } finally {
             if (resultSet != null) {
@@ -325,23 +294,19 @@ class Student {
         }
         return true;
     }
-    
-    
-    
-    
-    public int getFine(Connection connection, String id) throws SQLException
-    {
-    	Statement statement = null;
+
+    public int getFine(Connection connection, String id) throws SQLException {
+        Statement statement = null;
         ResultSet resultSet = null;
         try {
             statement = connection.createStatement();
             String query = "SELECT student_fine FROM Student WHERE student_id = '" + id + "'";
             resultSet = statement.executeQuery(query);
             if (resultSet.next()) {
-            	int a = resultSet.getInt("student_fine");
-            	return a;
+                int a = resultSet.getInt("student_fine");
+                return a;
             }
-            } catch (SQLException e) {
+        } catch (SQLException e) {
             e.printStackTrace();
         } finally {
             if (resultSet != null) {
@@ -361,97 +326,93 @@ class Student {
         }
         return 0;
     }
-    
+
     public void updateFine(Connection connection, String id, int bookId) throws SQLException {
-    Statement statement = null;
-    ResultSet resultSet = null;
+        Statement statement = null;
+        ResultSet resultSet = null;
 
-    try {
-        statement = connection.createStatement();
-        String query = "SELECT book1_return, book2_return, book3_return FROM Issued WHERE id = '" + id + "'";
-        resultSet = statement.executeQuery(query);
+        try {
+            statement = connection.createStatement();
+            String query = "SELECT book1_return, book2_return, book3_return FROM Issued WHERE id = '" + id + "'";
+            resultSet = statement.executeQuery(query);
 
-        if (resultSet.next()) {
-            String a1 = resultSet.getString("book1_return");
-            String a2 = resultSet.getString("book2_return");
-            String a3 = resultSet.getString("book3_return");
+            if (resultSet.next()) {
+                String a1 = resultSet.getString("book1_return");
+                String a2 = resultSet.getString("book2_return");
+                String a3 = resultSet.getString("book3_return");
 
-            int a = issuedbooknumber(connection, id, bookId);
-            SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd");
-            Date today = new Date();
-            String Todaysdate = dateFormat.format(today);
+                int a = issuedbooknumber(connection, id, bookId);
+                SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd");
+                Date today = new Date();
+                String Todaysdate = dateFormat.format(today);
 
-            if (a == 1 && a1 != null) {
-                Date providedDate = dateFormat.parse(a1);
-                int comparison = providedDate.compareTo(today);
-                long timeDiff = Math.abs(providedDate.getTime() - today.getTime());
-                long daysDiff = timeDiff / (1000 * 60 * 60 * 24);
-                int fine = getFine(connection, id);
-                fine += daysDiff;
-                String futureDate = getFifteenDate();
-                if (comparison < 0) {
-                statement = connection.createStatement();
-                    String updateQuery1 = "UPDATE Issued SET book1_return = '" + futureDate + "' WHERE id = '" + id + "'";
-                    statement.executeUpdate(updateQuery1);
-                    String updateQuery4 = "UPDATE Student SET student_fine =" + fine + " WHERE student_id = '" + id + "'";
-                    statement.executeUpdate(updateQuery4);
-                }
-            } else if (a == 2 && a2 != null) {
-                Date providedDate = dateFormat.parse(a2);
-                int comparison = providedDate.compareTo(today);
-                long timeDiff = Math.abs(providedDate.getTime() - today.getTime());
-                long daysDiff = timeDiff / (1000 * 60 * 60 * 24);
-                int fine = getFine(connection, id);
-                fine += daysDiff;
-                String futureDate = getFifteenDate();
-                if (comparison < 0) {
-                statement = connection.createStatement();
-                    String updateQuery2 = "UPDATE Issued SET book2_return = '" + futureDate + "' WHERE id = '" + id + "'";
-                    statement.executeUpdate(updateQuery2);
-                    String updateQuery5 = "UPDATE Student SET student_fine =" + fine + " WHERE student_id = '" + id + "'";
-                    statement.executeUpdate(updateQuery5);
-                }
-            } else if (a == 3 && a3 != null) {
-                Date providedDate = dateFormat.parse(a3);
-                int comparison = providedDate.compareTo(today);
-                long timeDiff = Math.abs(providedDate.getTime() - today.getTime());
-                long daysDiff = timeDiff / (1000 * 60 * 60 * 24);
-                int fine = getFine(connection, id);
-                fine += daysDiff;
-                String futureDate = getFifteenDate();
-                if (comparison < 0) {
-                statement = connection.createStatement();
-                    String updateQuery3 = "UPDATE Issued SET book3_return = '" + futureDate + "' WHERE id = '" + id + "'";
-                    statement.executeUpdate(updateQuery3);
-                    String updateQuery6 = "UPDATE Student SET student_fine =" + fine + " WHERE student_id = '" + id + "'";
-                    statement.executeUpdate(updateQuery6);
+                if (a == 1 && a1 != null) {
+                    Date providedDate = dateFormat.parse(a1);
+                    int comparison = providedDate.compareTo(today);
+                    long timeDiff = Math.abs(providedDate.getTime() - today.getTime());
+                    long daysDiff = timeDiff / (1000 * 60 * 60 * 24);
+                    int fine = getFine(connection, id);
+                    fine += daysDiff;
+                    String futureDate = getFifteenDate();
+                    if (comparison < 0) {
+                        statement = connection.createStatement();
+                        String updateQuery1 = "UPDATE Issued SET book1_return = '" + futureDate + "' WHERE id = '" + id + "'";
+                        statement.executeUpdate(updateQuery1);
+                        String updateQuery4 = "UPDATE Student SET student_fine =" + fine + " WHERE student_id = '" + id + "'";
+                        statement.executeUpdate(updateQuery4);
+                    }
+                } else if (a == 2 && a2 != null) {
+                    Date providedDate = dateFormat.parse(a2);
+                    int comparison = providedDate.compareTo(today);
+                    long timeDiff = Math.abs(providedDate.getTime() - today.getTime());
+                    long daysDiff = timeDiff / (1000 * 60 * 60 * 24);
+                    int fine = getFine(connection, id);
+                    fine += daysDiff;
+                    String futureDate = getFifteenDate();
+                    if (comparison < 0) {
+                        statement = connection.createStatement();
+                        String updateQuery2 = "UPDATE Issued SET book2_return = '" + futureDate + "' WHERE id = '" + id + "'";
+                        statement.executeUpdate(updateQuery2);
+                        String updateQuery5 = "UPDATE Student SET student_fine =" + fine + " WHERE student_id = '" + id + "'";
+                        statement.executeUpdate(updateQuery5);
+                    }
+                } else if (a == 3 && a3 != null) {
+                    Date providedDate = dateFormat.parse(a3);
+                    int comparison = providedDate.compareTo(today);
+                    long timeDiff = Math.abs(providedDate.getTime() - today.getTime());
+                    long daysDiff = timeDiff / (1000 * 60 * 60 * 24);
+                    int fine = getFine(connection, id);
+                    fine += daysDiff;
+                    String futureDate = getFifteenDate();
+                    if (comparison < 0) {
+                        statement = connection.createStatement();
+                        String updateQuery3 = "UPDATE Issued SET book3_return = '" + futureDate + "' WHERE id = '" + id + "'";
+                        statement.executeUpdate(updateQuery3);
+                        String updateQuery6 = "UPDATE Student SET student_fine =" + fine + " WHERE student_id = '" + id + "'";
+                        statement.executeUpdate(updateQuery6);
+                    }
                 }
             }
-        }
-    } catch (SQLException | ParseException e) {
-        e.printStackTrace();
-    } finally {
-        // Close resources
-        if (resultSet != null) {
-            try {
-                resultSet.close();
-            } catch (SQLException e) {
-                e.printStackTrace();
+        } catch (SQLException | ParseException e) {
+            e.printStackTrace();
+        } finally {
+            // Close resources
+            if (resultSet != null) {
+                try {
+                    resultSet.close();
+                } catch (SQLException e) {
+                    e.printStackTrace();
+                }
             }
-        }
-        if (statement != null) {
-            try {
-                statement.close();
-            } catch (SQLException e) {
-                e.printStackTrace();
+            if (statement != null) {
+                try {
+                    statement.close();
+                } catch (SQLException e) {
+                    e.printStackTrace();
+                }
             }
         }
     }
-}
-
-
-    
-    
 
     public int issuedbooknumber(Connection connection, String id, int bookid) throws SQLException {
         Statement statement = null;
@@ -544,7 +505,6 @@ class Student {
         String formattedFutureDate = dateFormat.format(calendar.getTime());
         return formattedFutureDate;
     }
-    
 
     public boolean isBookIssued(Connection connection, String id, int bookid) throws SQLException {
         if (bookid != 0) {
@@ -583,6 +543,7 @@ class Student {
         }
         return false;
     }
+
     public int numberOfBooksIssued(Connection connection, String id) throws SQLException {
         int c = 0;
         try (Statement statement = connection.createStatement()) {
@@ -671,93 +632,90 @@ class Student {
     }
 }
 
-class Staff extends Student
-{
-	
-	
-	protected void addStudent(Connection connection) {
-    Scanner scanner = new Scanner(System.in);
-    try {
-        System.out.print("Enter Name: ");
-        String studentName = scanner.nextLine();
 
-        if (studentNameMatches(connection, studentName)) {
-            System.out.println("Student with Name: " + studentName + " already exists.");
-            return;
-        }
 
-        System.out.print("Enter Address: ");
-        String studentAddress = scanner.nextLine();
 
-        System.out.print("Enter Age: ");
-        int studentAge = scanner.nextInt();
-        scanner.nextLine();
+class Staff extends Student {
 
-        System.out.print("Enter Phone Number: ");
-        String studentPhone = scanner.nextLine();
+    protected void addStudent(Connection connection) {
+        Scanner scanner = new Scanner(System.in);
+        try {
+            System.out.print("Enter Name: ");
+            String studentName = scanner.nextLine();
 
-        int a = 0;
-        String studentPassword = "";
-        while (a == 0) {
-            System.out.print("Set Password: ");
-            studentPassword = scanner.nextLine();
-            System.out.print("Enter Password again: ");
-            String studentPassword1 = scanner.nextLine();
-            if (studentPassword.equals(studentPassword1)) {
-                a = 1;
-            } else {
-                a = 0;
-                System.out.println("Both passwords should match");
+            if (studentNameMatches(connection, studentName)) {
+                System.out.println("Student with Name: " + studentName + " already exists.");
+                return;
             }
-        }
 
-        String studentId = getRandomStudentId(connection);
+            System.out.print("Enter Address: ");
+            String studentAddress = scanner.nextLine();
 
-        Statement statement = connection.createStatement();
-        String query = "INSERT INTO Student (student_id, name, addr, phone_no, books_issued, student_age, student_fine, student_password) VALUES ('" + studentId + "', '" + studentName + "', '" + studentAddress + "', '" + studentPhone + "', '0', '" + studentAge + "', '0', '" + studentPassword + "')";
-        String query1 = "INSERT INTO Issued (id, book1_id, book2_id, book3_id) VALUES ('" + studentId + "','0','0','0')";
-        statement.executeUpdate(query);
-        int rowsAffected = statement.executeUpdate(query1);
-        if (rowsAffected > 0) {
-            System.out.println("Student added successfully.");
-        } else {
-            System.out.println("Failed to add student.");
+            System.out.print("Enter Age: ");
+            int studentAge = scanner.nextInt();
+            scanner.nextLine();
+
+            System.out.print("Enter Phone Number: ");
+            String studentPhone = scanner.nextLine();
+
+            int a = 0;
+            String studentPassword = "";
+            while (a == 0) {
+                System.out.print("Set Password: ");
+                studentPassword = scanner.nextLine();
+                System.out.print("Enter Password again: ");
+                String studentPassword1 = scanner.nextLine();
+                if (studentPassword.equals(studentPassword1)) {
+                    a = 1;
+                } else {
+                    a = 0;
+                    System.out.println("Both passwords should match");
+                }
+            }
+
+            String studentId = getRandomStudentId(connection);
+
+            Statement statement = connection.createStatement();
+            String query = "INSERT INTO Student (student_id, name, addr, phone_no, books_issued, student_age, student_fine, student_password) VALUES ('" + studentId + "', '" + studentName + "', '" + studentAddress + "', '" + studentPhone + "', '0', '" + studentAge + "', '0', '" + studentPassword + "')";
+            String query1 = "INSERT INTO Issued (id, book1_id, book2_id, book3_id) VALUES ('" + studentId + "','0','0','0')";
+            statement.executeUpdate(query);
+            int rowsAffected = statement.executeUpdate(query1);
+            if (rowsAffected > 0) {
+                System.out.println("Student added successfully.");
+            } else {
+                System.out.println("Failed to add student.");
+            }
+        } catch (SQLException e) {
+            System.out.println("Error while adding student: " + e.getMessage());
+        } finally {
+            scanner.close();
         }
-    } catch (SQLException e) {
-        System.out.println("Error while adding student: " + e.getMessage());
-    } finally {
-        scanner.close();
     }
-}
 
-	
-	
-	
-	protected void returnBook(Connection connection, String id, int bookId) throws SQLException
-	{
-		int a;
+    protected void returnBook(Connection connection, String id, int bookId) throws SQLException {
+        int a;
         a = numberOfBooksIssued(connection, id);
         if (a != 0) {
             Statement statement = null;
-                int k = issuedbooknumber(connection, id, bookId);
-                try {
-                    statement = connection.createStatement();
-                    if (k == 1) {
-                    	updateFine(connection,id,bookId);
-                        String updateQuery1 = "UPDATE Issued SET book1_date = NULL, book1_id = 0,book1_return = NULL WHERE id = '" + id + "' AND book1_id = " + bookId;
-                        statement.executeUpdate(updateQuery1);
-                    }
-                    if (k == 2) {
-                    updateFine(connection,id,bookId);
-                        String updateQuery2 = "UPDATE Issued SET book2_date = NULL, book2_id = 0,book2_return = NULL WHERE id = '" + id + "' AND book2_id = " + bookId;
-                        statement.executeUpdate(updateQuery2);
-                    }
-                    if (k == 3) {
-                    updateFine(connection,id,bookId);
-                        String updateQuery3 = "UPDATE Issued SET book3_date = NULL, book3_id = 0,book3_return = NULL WHERE id = '" + id + "' AND book3_id = " + bookId;
-                        statement.executeUpdate(updateQuery3);
-                    }
-					if (k!=0){
+            int k = issuedbooknumber(connection, id, bookId);
+            try {
+                statement = connection.createStatement();
+                if (k == 1) {
+                    updateFine(connection, id, bookId);
+                    String updateQuery1 = "UPDATE Issued SET book1_date = NULL, book1_id = 0,book1_return = NULL WHERE id = '" + id + "' AND book1_id = " + bookId;
+                    statement.executeUpdate(updateQuery1);
+                }
+                if (k == 2) {
+                    updateFine(connection, id, bookId);
+                    String updateQuery2 = "UPDATE Issued SET book2_date = NULL, book2_id = 0,book2_return = NULL WHERE id = '" + id + "' AND book2_id = " + bookId;
+                    statement.executeUpdate(updateQuery2);
+                }
+                if (k == 3) {
+                    updateFine(connection, id, bookId);
+                    String updateQuery3 = "UPDATE Issued SET book3_date = NULL, book3_id = 0,book3_return = NULL WHERE id = '" + id + "' AND book3_id = " + bookId;
+                    statement.executeUpdate(updateQuery3);
+                }
+                if (k != 0) {
                     String incrementQuantityQuery = "UPDATE Books SET quantity = quantity + 1 WHERE book_id = " + bookId;
                     statement.executeUpdate(incrementQuantityQuery);
 
@@ -765,30 +723,29 @@ class Staff extends Student
                     statement.executeUpdate(decrementBooksIssuedQuery);
 
                     System.out.println("Book returned successfully!");
-                    }
-                    if(k <= 0||k>3)
-                    {
-                    	System.out.println("This book is Not Issued by student");
-                    }
-                } finally {
-                    if (statement != null) {
-                        statement.close();
-                    }
                 }
-            } else {
-                System.out.println("No book Issued by student");
+                if (k <= 0 || k > 3) {
+                    System.out.println("This book is Not Issued by student");
+                }
+            } finally {
+                if (statement != null) {
+                    statement.close();
+                }
             }
-	}
-	
-	protected void issueBook(Connection connection, String id, int bookId) throws SQLException {
-            Statement statement = null;
-            int k = quantityOfBookRemaining(connection, bookId);
-            if (k != 0) {
-                int a;
-                a = numberOfBooksIssued(connection, id);
-                String date = getTodaysdate();
-                String returndate = getFifteenDate();
-                if(a<=3){
+        } else {
+            System.out.println("No book Issued by student");
+        }
+    }
+
+    protected void issueBook(Connection connection, String id, int bookId) throws SQLException {
+        Statement statement = null;
+        int k = quantityOfBookRemaining(connection, bookId);
+        if (k != 0) {
+            int a;
+            a = numberOfBooksIssued(connection, id);
+            String date = getTodaysdate();
+            String returndate = getFifteenDate();
+            if (a <= 3) {
                 try {
                     statement = connection.createStatement();
 
@@ -821,86 +778,75 @@ class Staff extends Student
                 }
 
             } else {
-            	System.out.println("You reached the book issuing limit.");
+                System.out.println("You reached the book issuing limit.");
             }
-            } else {
-                System.out.println("The book you requested is not available at this time.");
-            }
+        } else {
+            System.out.println("The book you requested is not available at this time.");
+        }
     }
-    
-    
+
     protected void renewBook(Connection connection, String id, int bookId) throws SQLException {
-               updateFine(connection,id,bookId);
-    	}
-    	
-    	
+        updateFine(connection, id, bookId);
+    }
+
 }
 
 
-class Librarian extends Staff {
-	
-	
-	
-	
-	
-	private boolean staffNameMatches(Connection connection,String name) throws SQLException {
-		Statement statement = null;
-    ResultSet resultSet = null;
 
-    try {
-        statement = connection.createStatement();
-        String query = "SELECT name FROM Staff WHERE name = '" + name + "'";
-        resultSet = statement.executeQuery(query);
-        if (resultSet.next()) {
-            String nameFromDb = resultSet.getString("name");
-            if (nameFromDb.equals(name)) {
-                return true;
+
+class Librarian extends Staff {
+
+    private boolean staffNameMatches(Connection connection, String name) throws SQLException {
+        Statement statement = null;
+        ResultSet resultSet = null;
+
+        try {
+            statement = connection.createStatement();
+            String query = "SELECT name FROM Staff WHERE name = '" + name + "'";
+            resultSet = statement.executeQuery(query);
+            if (resultSet.next()) {
+                String nameFromDb = resultSet.getString("name");
+                if (nameFromDb.equals(name)) {
+                    return true;
+                } else {
+                    return false;
+                }
             } else {
                 return false;
             }
-        } else {
-            return false;
+        } finally {
+            if (resultSet != null) resultSet.close();
+            if (statement != null) statement.close();
         }
-    } finally {
-        if (resultSet != null) resultSet.close();
-        if (statement != null) statement.close();
     }
-		
-	}
-	
-	
-	
-	private String getStaffIssueNumber(Connection connection)
-	{
-		int Quantity = 0;
-    	Statement statement = null;
+
+    private String getStaffIssueNumber(Connection connection) {
+        int Quantity = 0;
+        Statement statement = null;
         ResultSet resultSet = null;
         try {
             statement = connection.createStatement();
             String query = "SELECT Number FROM LibraryStaffIssued ";
             resultSet = statement.executeQuery(query);
             if (resultSet.next()) {
-            	Quantity = resultSet.getInt("Number");
-            }		
-            		if(Quantity<999){
-            		Quantity = Quantity + 1;
-            		String updateQuery2 = "UPDATE LibraryStaffIssued SET Number =" + Quantity;
-                    statement.executeUpdate(updateQuery2);
-            		String i = Integer.toString(Quantity);
-            		return i;
-            		}
-            		if(Quantity>=999)
-            		{
-            			Quantity = 0;
-            			Quantity = Quantity + 1;
-            			String updateQuery2 = "UPDATE LibraryStaffIssued SET Number =" + Quantity;
-                    	statement.executeUpdate(updateQuery2);
-            			String i = Integer.toString(Quantity);
-            			return i;
-            		}
-            		
-            		
-            } catch (SQLException e) {
+                Quantity = resultSet.getInt("Number");
+            }
+            if (Quantity < 999) {
+                Quantity = Quantity + 1;
+                String updateQuery2 = "UPDATE LibraryStaffIssued SET Number =" + Quantity;
+                statement.executeUpdate(updateQuery2);
+                String i = Integer.toString(Quantity);
+                return i;
+            }
+            if (Quantity >= 999) {
+                Quantity = 0;
+                Quantity = Quantity + 1;
+                String updateQuery2 = "UPDATE LibraryStaffIssued SET Number =" + Quantity;
+                statement.executeUpdate(updateQuery2);
+                String i = Integer.toString(Quantity);
+                return i;
+            }
+        } catch (SQLException e) {
             e.printStackTrace();
         } finally {
             if (resultSet != null) {
@@ -917,212 +863,180 @@ class Librarian extends Staff {
                     e.printStackTrace();
                 }
             }
-	}
-		return "0";
-	}
-	
-	private String getRandomStaffId(Connection connection){
-		String departmentId = "LIB";
-		String date = getTodaysdate();
-    		String year = date.substring(0, 4);
-    		
-    		String SerialNumber = getStaffIssueNumber(connection);
-    		int SerialNo = Integer.parseInt(SerialNumber);
-    		if(SerialNo < 10 && SerialNo != 0)
-    		{
-    			return "S"+year+departmentId+"00"+SerialNumber;
-    		}
-    		if(SerialNo<=99 && SerialNo>=10)
-    		{
-    			return "S"+year+departmentId+"0"+SerialNumber;
-    		}
-    		if(SerialNo<=999 && SerialNo>=100)
-    		{
-    			return "S"+year+departmentId+SerialNumber;
-    		}
-    		return "";
-		
-	}
-	
-	
-	
-	
-	private void addStaff(Connection connection){
-		
-		
-		
-		Scanner scanner = new Scanner(System.in);
-    try {
-        System.out.print("Enter Name: ");
-        String staffName = scanner.nextLine();
-
-        if (staffNameMatches(connection, staffName)) {
-            System.out.println("Staff with Name: " + staffName + " already exists.");
-            return;
         }
+        return "0";
+    }
 
-        System.out.print("Enter Address: ");
-        String staffAddress = scanner.nextLine();
+    private String getRandomStaffId(Connection connection) {
+        String departmentId = "LIB";
+        String date = getTodaysdate();
+        String year = date.substring(0, 4);
 
-        System.out.print("Enter Phone Number: ");
-        String staffPhone = scanner.nextLine();
-        
-        System.out.print("Enter Salary: ");
-        int staffSalary = scanner.nextInt();
-	scanner.nextLine();
-        int a = 0;
-        String staffPassword = "";
-        while (a == 0) {
-            System.out.print("Set Password: ");
-            staffPassword = scanner.nextLine();
-            System.out.print("Enter Password again: ");
-            String staffPassword1 = scanner.nextLine();
-            if (staffPassword.equals(staffPassword1)) {
-                a = 1;
-            } else {
-                a = 0;
-                System.out.println("Both passwords should match");
+        String SerialNumber = getStaffIssueNumber(connection);
+        int SerialNo = Integer.parseInt(SerialNumber);
+        if (SerialNo < 10 && SerialNo != 0) {
+            return "S" + year + departmentId + "00" + SerialNumber;
+        }
+        if (SerialNo <= 99 && SerialNo >= 10) {
+            return "S" + year + departmentId + "0" + SerialNumber;
+        }
+        if (SerialNo <= 999 && SerialNo >= 100) {
+            return "S" + year + departmentId + SerialNumber;
+        }
+        return "";
+    }
+
+    private void addStaff(Connection connection) {
+        Scanner scanner = new Scanner(System.in);
+        try {
+            System.out.print("Enter Name: ");
+            String staffName = scanner.nextLine();
+
+            if (staffNameMatches(connection, staffName)) {
+                System.out.println("Staff with Name: " + staffName + " already exists.");
+                return;
             }
+
+            System.out.print("Enter Address: ");
+            String staffAddress = scanner.nextLine();
+
+            System.out.print("Enter Phone Number: ");
+            String staffPhone = scanner.nextLine();
+
+            System.out.print("Enter Salary: ");
+            int staffSalary = scanner.nextInt();
+            scanner.nextLine();
+
+            int a = 0;
+            String staffPassword = "";
+            while (a == 0) {
+                System.out.print("Set Password: ");
+                staffPassword = scanner.nextLine();
+                System.out.print("Enter Password again: ");
+                String staffPassword1 = scanner.nextLine();
+                if (staffPassword.equals(staffPassword1)) {
+                    a = 1;
+                } else {
+                    a = 0;
+                    System.out.println("Both passwords should match");
+                }
+            }
+
+            String staffId = getRandomStaffId(connection);
+
+            String stafflogin = getTodaysdate();
+
+            Statement statement = connection.createStatement();
+            String query = "INSERT INTO Staff (staff_id, name, addr, phone_no, staff_pass, Salary, last_login) VALUES ('" + staffId + "', '" + staffName + "', '" + staffAddress + "', '" + staffPhone + "','" + staffPassword + "', '" + staffSalary + "','" + stafflogin + "')";
+
+            int rowsAffected = statement.executeUpdate(query);
+            if (rowsAffected > 0) {
+                System.out.println("Staff added successfully.");
+            } else {
+                System.out.println("Failed to add staff.");
+            }
+        } catch (SQLException e) {
+            System.out.println("Error while adding student: " + e.getMessage());
+        } finally {
+            scanner.close();
         }
-
-        String staffId = getRandomStaffId(connection);
-        
-        String stafflogin = getTodaysdate();
-
-        Statement statement = connection.createStatement();
-        String query = "INSERT INTO Staff (staff_id, name, addr, phone_no, staff_pass, Salary, last_login) VALUES ('" + staffId + "', '" + staffName + "', '" + staffAddress + "', '" + staffPhone + "','" + staffPassword + "', '" + staffSalary + "','" + stafflogin + "')";
-
-        
-        int rowsAffected = statement.executeUpdate(query);
-        if (rowsAffected > 0) {
-            System.out.println("Staff added successfully.");
-        } else {
-            System.out.println("Failed to add staff.");
-        }
-    } catch (SQLException e) {
-        System.out.println("Error while adding student: " + e.getMessage());
-    } finally {
-        scanner.close();
-    }
-		
-		
-	}
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	private void addBook(Connection connection) {
-    Scanner scanner = new Scanner(System.in);
-    System.out.print("Enter a Book Name: ");
-    String bookName = scanner.nextLine();
-    // Check if book already exists
-    if (bookAlreadyExist(connection, bookName)) {
-        System.out.println("Book already exists.");
-        return;
-    }
-    System.out.print("Enter Author Name: ");
-    String bookAuthor = scanner.nextLine();
-    System.out.print("Enter Book Subject: ");
-    String bookSubject = scanner.nextLine();
-    System.out.print("Enter Book Quantity: ");
-    int bookQuantity = scanner.nextInt();
-
-    
-
-    // Validate book quantity
-    if (bookQuantity <= 0) {
-        System.out.println("Book quantity cannot be zero or negative.");
-        return;
     }
 
-    try {
-        Statement statement = connection.createStatement();
-        String query = "INSERT INTO Books (book_name, book_author, book_subject, quantity, total_quantity) VALUES ('" + bookName + "', '" + bookAuthor + "', '" + bookSubject + "', " + bookQuantity + ", " + bookQuantity + ")";
-        int rowsAffected = statement.executeUpdate(query);
-        if (rowsAffected > 0) {
-            System.out.println("Book added successfully.");
-        } else {
-            System.out.println("Failed to add book.");
-        }
-    } catch (SQLException e) {
-        System.out.println("Error while adding book: " + e.getMessage());
-    } finally {
-        scanner.close(); // Close the scanner to release resources
-    }
-}
-
-
-	private void removeBook(Connection connection) {
-    
-    
-    
-    Scanner scanner = new Scanner(System.in);
-    try {
+    private void addBook(Connection connection) {
+        Scanner scanner = new Scanner(System.in);
         System.out.print("Enter a Book Name: ");
-        if (!scanner.hasNextLine()) {
-            System.out.println("No input provided.");
-            return;
-        }
         String bookName = scanner.nextLine();
-        
-        if (!bookAlreadyExist(connection, bookName)) {
-            System.out.println("Book does not exist in this library.");
+        // Check if book already exists
+        if (bookAlreadyExist(connection, bookName)) {
+            System.out.println("Book already exists.");
             return;
-        }
-        int quantityOfBookRemaining = quantityOfBookRemaining(connection,getBookId(connection, bookName));
-        int totalQuantity = getTotalQuantity(connection,getBookId(connection, bookName));
-        if(quantityOfBookRemaining != totalQuantity)
-        {
-        	System.out.println("This Book is Issued by student so cannot be removed.");
-        	return;
         }
         System.out.print("Enter Author Name: ");
-    	String bookAuthor = scanner.nextLine();
-    	System.out.print("Enter Book Subject: ");
-    	String bookSubject = scanner.nextLine();
-        
-        
-        Statement statement = connection.createStatement();
-        String query = "DELETE FROM Books WHERE book_name = '" + bookName + "' AND book_author = '" + bookAuthor + "' AND book_subject = '" + bookSubject + "'";
-        int rowsAffected = statement.executeUpdate(query);
-        if (rowsAffected > 0) {
-            System.out.println("Book with name " + bookName + " deleted successfully.");
-        } else {
-            System.out.println("No book deleted Incorrect Author name or Subject.");
-        }
-    } catch (SQLException e) {
-        System.out.println("Error while deleting row: " + e.getMessage());
-    } finally {
-        scanner.close(); // Close the scanner to release resources
-    }
-}
+        String bookAuthor = scanner.nextLine();
+        System.out.print("Enter Book Subject: ");
+        String bookSubject = scanner.nextLine();
+        System.out.print("Enter Book Quantity: ");
+        int bookQuantity = scanner.nextInt();
 
-	
-	public static void clearScreen() {
-    System.out.print("\033[H\033[2J");
-    System.out.flush();
-}
-	
-	
-	private static String getLibrarianId(Connection connection)
-	{
-		Statement statement = null;
+        // Validate book quantity
+        if (bookQuantity <= 0) {
+            System.out.println("Book quantity cannot be zero or negative.");
+            return;
+        }
+
+        try {
+            Statement statement = connection.createStatement();
+            String query = "INSERT INTO Books (book_name, book_author, book_subject, quantity, total_quantity) VALUES ('" + bookName + "', '" + bookAuthor + "', '" + bookSubject + "', " + bookQuantity + ", " + bookQuantity + ")";
+            int rowsAffected = statement.executeUpdate(query);
+            if (rowsAffected > 0) {
+                System.out.println("Book added successfully.");
+            } else {
+                System.out.println("Failed to add book.");
+            }
+        } catch (SQLException e) {
+            System.out.println("Error while adding book: " + e.getMessage());
+        } finally {
+            scanner.close(); // Close the scanner to release resources
+        }
+    }
+
+    private void removeBook(Connection connection) {
+        Scanner scanner = new Scanner(System.in);
+        try {
+            System.out.print("Enter a Book Name: ");
+            if (!scanner.hasNextLine()) {
+                System.out.println("No input provided.");
+                return;
+            }
+            String bookName = scanner.nextLine();
+
+            if (!bookAlreadyExist(connection, bookName)) {
+                System.out.println("Book does not exist in this library.");
+                return;
+            }
+            int quantityOfBookRemaining = quantityOfBookRemaining(connection, getBookId(connection, bookName));
+            int totalQuantity = getTotalQuantity(connection, getBookId(connection, bookName));
+            if (quantityOfBookRemaining != totalQuantity) {
+                System.out.println("This Book is Issued by student so cannot be removed.");
+                return;
+            }
+            System.out.print("Enter Author Name: ");
+            String bookAuthor = scanner.nextLine();
+            System.out.print("Enter Book Subject: ");
+            String bookSubject = scanner.nextLine();
+
+            Statement statement = connection.createStatement();
+            String query = "DELETE FROM Books WHERE book_name = '" + bookName + "' AND book_author = '" + bookAuthor + "' AND book_subject = '" + bookSubject + "'";
+            int rowsAffected = statement.executeUpdate(query);
+            if (rowsAffected > 0) {
+                System.out.println("Book with name " + bookName + " deleted successfully.");
+            } else {
+                System.out.println("No book deleted Incorrect Author name or Subject.");
+            }
+        } catch (SQLException e) {
+            System.out.println("Error while deleting row: " + e.getMessage());
+        } finally {
+            scanner.close(); // Close the scanner to release resources
+        }
+    }
+
+    public static void clearScreen() {
+        System.out.print("\033[H\033[2J");
+        System.out.flush();
+    }
+
+    private static String getLibrarianId(Connection connection) {
+        Statement statement = null;
         ResultSet resultSet = null;
         try {
             statement = connection.createStatement();
             String query = "SELECT LibrarianId FROM Librarian";
             resultSet = statement.executeQuery(query);
             if (resultSet.next()) {
-            	String a = resultSet.getString("LibrarianId");
-            	return a;
+                String a = resultSet.getString("LibrarianId");
+                return a;
             }
-            } catch (SQLException e) {
+        } catch (SQLException e) {
             e.printStackTrace();
         } finally {
             if (resultSet != null) {
@@ -1141,21 +1055,20 @@ class Librarian extends Staff {
             }
         }
         return "";
-	}
-	
-	private static String getLibrarianPass(Connection connection)
-	{
-		Statement statement = null;
+    }
+
+    private static String getLibrarianPass(Connection connection) {
+        Statement statement = null;
         ResultSet resultSet = null;
         try {
             statement = connection.createStatement();
             String query = "SELECT LibrarianPass FROM Librarian";
             resultSet = statement.executeQuery(query);
             if (resultSet.next()) {
-            	String a = resultSet.getString("LibrarianPass");
-            	return a;
+                String a = resultSet.getString("LibrarianPass");
+                return a;
             }
-            } catch (SQLException e) {
+        } catch (SQLException e) {
             e.printStackTrace();
         } finally {
             if (resultSet != null) {
@@ -1174,19 +1087,19 @@ class Librarian extends Staff {
             }
         }
         return "";
-	}
+    }
 
     public static void main(String[] args) {
         Connection connection = null;
         try {
-        	Librarian l = new Librarian();
+            Librarian l = new Librarian();
             Class.forName("com.mysql.cj.jdbc.Driver");
             connection = DriverManager.getConnection(Student.URL, Student.USER, Student.PASSWORD);
             if (connection != null) {
-            	String User = "";
-            	String UserPass = "";
-            	int loginAttempts = 0;
-                Scanner scanner = new Scanner(System.in); 
+                String User = "";
+                String UserPass = "";
+                int loginAttempts = 0;
+                Scanner scanner = new Scanner(System.in);
                 int Choice = 0;
                 String LibrarianUsername = getLibrarianId(connection);
                 String LibrarianPassword = getLibrarianPass(connection);
@@ -1197,78 +1110,58 @@ class Librarian extends Staff {
                 System.out.print("Enter Your Choice :");
                 Choice = scanner.nextInt();
                 scanner.nextLine();
-                do { 
-                		
-                		switch (Choice) {
-    				case 1:
-        				do {
-        				
-            				System.out.print("Enter Librarian Username :");
-            				User = scanner.nextLine();
-            				System.out.print("Enter Librarian Password :");
-            				UserPass = scanner.nextLine();
-            				clearScreen();
-            				loginAttempts = loginAttempts + 1;
-            				if((!User.equals(LibrarianUsername) || !UserPass.equals(LibrarianPassword)) && loginAttempts==3)
-            				{
-            					System.out.println("You Failed to Login 3 times so you have to restart application!");
-            					System.out.println("GoodBye!!");
-            					Choice=0;
-            					break;
-            				}
-            				if(!User.equals(LibrarianUsername) || !UserPass.equals(LibrarianPassword))
-            				{
-            					int a = 3-loginAttempts;
-            					System.out.println("Only " + a + " Attempts left!");
-            				}
-        				} while (!User.equals(LibrarianUsername) || !UserPass.equals(LibrarianPassword));
-        				if(User.equals(LibrarianUsername) && UserPass.equals(LibrarianPassword))
-            				{
-            					clearScreen();
-            					System.out.println("Login successful!");
-            					System.out.println("Hello, Librarian!");
-            					System.out.println("What You Would Like to do:");
-            					System.out.println("1.Add Staff");
-            					System.out.println("2.Remove Staff");
-            					System.out.println("3.Add Book");
-            					System.out.println("4.Remove Book");
-            					System.out.println("5.Add Student");
-            					System.out.println("6.Remove Student");
-            					System.out.println("7.Available Books In Library");
-            					System.out.println("8.Get Student Information");
-            					System.out.println("9.Get Staff Information");
-            					System.out.println("10.Issue a Book");
-            					System.out.println("11.Return a Book");
-            					System.out.println("12.Renew a Book");
-            					System.out.println("13.Get Student Fine");
-            					System.out.println("14.To Exit");
-            					
-            					
-            					
-            					l.addStaff(connection);
-            					
-            				}
-        				Choice = 0;
-        				break;
-					}
-                }while(Choice != 0);
-                
-                
-                
-                
-                
-                
-                
-                
-                
-                
-                
-                
-                
-                
-                
-                
-                
+                do {
+
+                    switch (Choice) {
+                        case 1:
+                            do {
+
+                                System.out.print("Enter Librarian Username :");
+                                User = scanner.nextLine();
+                                System.out.print("Enter Librarian Password :");
+                                UserPass = scanner.nextLine();
+                                clearScreen();
+                                loginAttempts = loginAttempts + 1;
+                                if ((!User.equals(LibrarianUsername) || !UserPass.equals(LibrarianPassword)) && loginAttempts == 3) {
+                                    System.out.println("You Failed to Login 3 times so you have to restart application!");
+                                    System.out.println("GoodBye!!");
+                                    Choice = 0;
+                                    break;
+                                }
+                                if (!User.equals(LibrarianUsername) || !UserPass.equals(LibrarianPassword)) {
+                                    int a = 3 - loginAttempts;
+                                    System.out.println("Only " + a + " Attempts left!");
+                                }
+                            } while (!User.equals(LibrarianUsername) || !UserPass.equals(LibrarianPassword));
+                            if (User.equals(LibrarianUsername) && UserPass.equals(LibrarianPassword)) {
+                                clearScreen();
+                                System.out.println("Login successful!");
+                                System.out.println("Hello, Librarian!");
+                                System.out.println("What You Would Like to do:");
+                                System.out.println("1.Add Staff");
+                                System.out.println("2.Remove Staff");
+                                System.out.println("3.Add Book");
+                                System.out.println("4.Remove Book");
+                                System.out.println("5.Add Student");
+                                System.out.println("6.Remove Student");
+                                System.out.println("7.Available Books In Library");
+                                System.out.println("8.Get Student Information");
+                                System.out.println("9.Get Staff Information");
+                                System.out.println("10.Issue a Book");
+                                System.out.println("11.Return a Book");
+                                System.out.println("12.Renew a Book");
+                                System.out.println("13.Get Student Fine");
+                                System.out.println("14.To Exit");
+
+                                l.addStaff(connection);
+
+                            }
+                            Choice = 0;
+                            break;
+                    }
+                } while (Choice != 0);
+
+
             } else {
                 System.out.println("Failed to connect to the database!");
             }
@@ -1286,6 +1179,5 @@ class Librarian extends Staff {
             }
         }
     }
-    }
-
+}
 
