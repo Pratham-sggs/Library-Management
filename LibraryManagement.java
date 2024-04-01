@@ -8,6 +8,7 @@ import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.text.ParseException;
 import java.util.Scanner;
+import java.util.InputMismatchException;
 
 
 class Student {
@@ -17,7 +18,7 @@ class Student {
     
     
     
-    public boolean isValidStudentPassword(Connection connection,String studentId,String studentPassword){
+    public boolean isValidStudentPassword(Connection connection,String studentId,String studentPassword) throws SQLException {
     	Statement statement = null;
         ResultSet resultSet = null;
 
@@ -666,19 +667,40 @@ class Student {
 class Staff extends Student {
 
 
-	protected void repayFine(Connection connection, String Id)
-	{
-		
-		System.out.print("Enter Amount: ");
-        int repayamount = scanner.nextInt();
+	protected void repayFine(Connection connection, String Id) {
+    Scanner scanner = new Scanner(System.in);
+    try {
+        System.out.print("Enter Amount: ");
+        int repayAmount = scanner.nextInt();
         
-        int totalamount = getFine(connection,Id);
+        int totalAmount = getFine(connection, Id);
+        int newAmount = totalAmount - repayAmount;
         
-        int amount = totalamount - repayamount;
-		
-		String updateQuery = "UPDATE Student SET student_fine = "+ amount +"WHERE student_id = '" + Id + "'";
-        statement.executeUpdate(updateQuery);
-	}
+        if (newAmount < 0) {
+            System.out.println("Amount to repay exceeds total fine.");
+            return;
+        }
+        
+        String updateQuery = "UPDATE Student SET student_fine = " + newAmount + " WHERE student_id = '" + Id + "'";
+        Statement statement = connection.createStatement();
+        
+        int rowsAffected = statement.executeUpdate(updateQuery);
+
+        if (rowsAffected > 0) {
+            System.out.println("Fine updated.");
+        } else {
+            System.out.println("Failed to update fine.");
+        }
+    } catch (InputMismatchException e) {
+        System.out.println("Invalid input. Please enter a valid amount.");
+    } catch (SQLException e) {
+        System.out.println("Error while updating fine: " + e.getMessage());
+    } finally {
+        scanner.close();
+    }
+}
+
+
 
     protected void addStudent(Connection connection) {
         Scanner scanner = new Scanner(System.in);
@@ -894,7 +916,7 @@ class Staff extends Student {
         }
     }
     
-    protected boolean isValidStaffPassword(Connection connection,String staffId,String staffPassword){
+    protected boolean isValidStaffPassword(Connection connection,String staffId,String staffPassword) throws SQLException  {
     	Statement statement = null;
         ResultSet resultSet = null;
 
@@ -920,7 +942,7 @@ class Staff extends Student {
     
     public boolean isValidStaffId(Connection connection, String id) throws SQLException {
         try (Statement statement = connection.createStatement()) {
-            try (ResultSet resultSet = statement.executeQuery("SELECT staff_id FROM Student WHERE staff_id = '" + id + "'")) {
+            try (ResultSet resultSet = statement.executeQuery("SELECT staff_id FROM Staff WHERE staff_id = '" + id + "'")) {
                 if (resultSet.next()) {
                     String c = resultSet.getString("staff_id");
                     if (c.equals(id)) {
@@ -1300,14 +1322,13 @@ class Librarian extends Staff {
     public static void main(String[] args) {
         Connection connection = null;
         try {
-            int cp = 0;
             Class.forName("com.mysql.cj.jdbc.Driver");
             connection = DriverManager.getConnection(Student.URL, Student.USER, Student.PASSWORD);
             if (connection != null) {
                 String User = "";
                 int bookId =0;
                 String UserPass = "";
-                String studentId = "";
+                
                 int loginAttempts = 0;
                 Scanner scanner = new Scanner(System.in);
                 int Choice = 0;
@@ -1324,8 +1345,10 @@ class Librarian extends Staff {
 
                     switch (Choice) {
                         case 1:
+                        int c = 0;
+                        String studentId = "";
                             do {
-
+                                
                                 System.out.print("Enter Librarian Username :");
                                 User = scanner.nextLine();
                                 System.out.print("Enter Librarian Password :");
@@ -1350,7 +1373,7 @@ class Librarian extends Staff {
                                	Librarian l = new Librarian();
                                 do 
                                 {
-                                	clearScreen();
+                                	
                                 	System.out.println("What You Would Like to do:");
                                 	System.out.println("1.Add Staff");
                                 	System.out.println("2.Remove Staff");
@@ -1368,9 +1391,9 @@ class Librarian extends Staff {
                                 	System.out.println("14.Pay Student Fine");
                               	    System.out.println("15.To Exit");
                              	  	System.out.print("Enter Your Choice:");
-									cp = scanner.nextInt();
+									c = scanner.nextInt();
 									scanner.nextLine();
-            						switch (cp) {
+            						switch (c) {
                 						case 1:
                 						    l.addStaff(connection);
                 						    break;
@@ -1395,25 +1418,25 @@ class Librarian extends Staff {
                 						case 8:
                 							System.out.print("Enter Student Id :");
                                 			studentId = scanner.nextLine();
-                                			if(!isValidStudentId(connection,studentId)){
+                                			if(!l.isValidStudentId(connection,studentId)){
                                 				System.out.println("Student id is Invalid");
                 						    	break;
                 						    }
                 						    l.studentinfo(connection,studentId);
                 						    break;
                 						case 9:
-                						    printStaff(connection);
+                						    l.printStaff(connection);
                 						    break;
                 						case 10:
                 							System.out.print("Enter Student Id :");
                                 			studentId = scanner.nextLine();
-                                			if(!isValidStudentId(connection,studentId)){
+                                			if(!l.isValidStudentId(connection,studentId)){
                                 				System.out.println("Student id is Invalid");
                 						    	break;
                 						    }
                 						    System.out.print("Enter book Id :");
                                 			bookId = scanner.nextInt();
-                                			if(!isBookIssued(connection,studentId,bookId)){
+                                			if(!l.isBookIssued(connection,studentId,bookId)){
                                 				System.out.println("This Book is not issued by student");
                 						    	break;
                 						    }
@@ -1422,13 +1445,13 @@ class Librarian extends Staff {
                 						case 11:
                 							System.out.print("Enter Student Id :");
                                 			studentId = scanner.nextLine();
-                                			if(!isValidStudentId(connection,studentId)){
+                                			if(!l.isValidStudentId(connection,studentId)){
                                 				System.out.println("Student id is Invalid");
                 						    	break;
                 						    }
                 						    System.out.print("Enter book Id :");
                                 			bookId = scanner.nextInt();
-                                			if(!isBookIssued(connection,studentId,bookId)){
+                                			if(!l.isBookIssued(connection,studentId,bookId)){
                                 				System.out.println("This Book is not issued by student");
                 						    	break;
                 						    }
@@ -1437,13 +1460,13 @@ class Librarian extends Staff {
                 						case 12:
                 							System.out.print("Enter Student Id :");
                                 			studentId = scanner.nextLine();
-                                			if(!isValidStudentId(connection,studentId)){
+                                			if(!l.isValidStudentId(connection,studentId)){
                                 				System.out.println("Student id is Invalid");
                 						    	break;
                 						    }
                 						    System.out.print("Enter book Id :");
                                 			bookId = scanner.nextInt();
-                                			if(!isBookIssued(connection,studentId,bookId)){
+                                			if(!l.isBookIssued(connection,studentId,bookId)){
                                 				System.out.println("This Book is not issued by student");
                 						    	break;
                 						    }
@@ -1452,20 +1475,22 @@ class Librarian extends Staff {
                 						case 13:
                     						System.out.print("Enter Student Id :");
                                 			studentId = scanner.nextLine();
-                                			if(!isValidStudentId(connection,studentId)){
+                                			if(!l.isValidStudentId(connection,studentId)){
                                 				System.out.println("Student id is Invalid");
                 						    	break;
                 						    }
-                						    l.getFine(connection,studentId);
+                						    int a = l.getFine(connection,studentId);
+                						    System.out.println("Student Fine = "+a);
                     						break;
                 						case 14:
                 						    System.out.print("Enter Student Id :");
                                 			studentId = scanner.nextLine();
-                                			if(!isValidStudentId(connection,studentId)){
+                                			if(!l.isValidStudentId(connection,studentId)){
                                 				System.out.println("Student id is Invalid");
                 						    	break;
                 						    }
                 						    l.repayFine(connection,studentId);
+                						    
                     						break;
                 						case 15:
                 						    Choice = 0;
@@ -1475,7 +1500,7 @@ class Librarian extends Staff {
                     						System.out.println("Enter Valid Choice! ");
                    							break;
             						}
-        						} while (cp != 15);
+        						} while (c != 15);
         						
                             }
                             Choice = 0;
@@ -1484,22 +1509,23 @@ class Librarian extends Staff {
                         	String staffPassword = "";
                         	String staffId = "";
                         	int cp = 0;
+                            Staff staff = new Staff();
                         	System.out.print("Enter Staff Id :");
                             staffId = scanner.nextLine();
-                            if(!isValidStaffId(connection,studentId)){
+                            if(!staff.isValidStaffId(connection,staffId)){
                             	System.out.println("Staff id is Invalid");
                 				break;
                 			}
                 			System.out.print("Enter Staff Password :");
                             staffPassword = scanner.nextLine();
-                			if(!isValidStaffPassword(connection,staffId,staffPassword)){
+                			if(!staff.isValidStaffPassword(connection,staffId,staffPassword)){
                             	System.out.println("Staff Password is Invalid");
                 				break;
                 			}
-                        	Staff staff = new Staff();
+                        	clearScreen();
                         	do 
                                 {
-                                	clearScreen();
+                                	
                                 	System.out.println("What You Would Like to do:");
                                 	
                                 	System.out.println("1.Add Student");
@@ -1511,9 +1537,10 @@ class Librarian extends Staff {
                                 	System.out.println("7.Renew a Book");
                                 	System.out.println("8.Get Student Fine");
                                 	System.out.println("9.Pay Student Fine");
-                              	    System.out.println("10.To Exit");
+                              	    	System.out.println("10.To Exit");
                              	  	System.out.print("Enter Your Choice:");
 									cp = scanner.nextInt();
+									scanner.nextLine();
                         	switch (cp)
                         	{
                         				case 1:
@@ -1528,7 +1555,7 @@ class Librarian extends Staff {
                 						case 4:
                 							System.out.print("Enter Student Id :");
                                 			studentId = scanner.nextLine();
-                                			if(!isValidStudentId(connection,studentId)){
+                                			if(!staff.isValidStudentId(connection,studentId)){
                                 				System.out.println("Student id is Invalid");
                 						    	break;
                 						    }
@@ -1537,7 +1564,7 @@ class Librarian extends Staff {
                 						case 5:
                 							System.out.print("Enter Student Id :");
                                 			studentId = scanner.nextLine();
-                                			if(!isValidStudentId(connection,studentId)){
+                                			if(!staff.isValidStudentId(connection,studentId)){
                                 				System.out.println("Student id is Invalid");
                 						    	break;
                 						    }
@@ -1548,13 +1575,13 @@ class Librarian extends Staff {
                 						case 6:
                 							System.out.print("Enter Student Id :");
                                 			studentId = scanner.nextLine();
-                                			if(!isValidStudentId(connection,studentId)){
+                                			if(!staff.isValidStudentId(connection,studentId)){
                                 				System.out.println("Student id is Invalid");
                 						    	break;
                 						    }
                 						    System.out.print("Enter book Id :");
                                 			bookId = scanner.nextInt();
-                                			if(!isBookIssued(connection,studentId,bookId)){
+                                			if(!staff.isBookIssued(connection,studentId,bookId)){
                                 				System.out.println("This Book is not issued by student");
                 						    	break;
                 						    }
@@ -1563,22 +1590,23 @@ class Librarian extends Staff {
                 						case 7:
                 							System.out.print("Enter Student Id :");
                                 			studentId = scanner.nextLine();
-                                			if(!isValidStudentId(connection,studentId)){
+                                			if(!staff.isValidStudentId(connection,studentId)){
                                 				System.out.println("Student id is Invalid");
                 						    	break;
                 						    }
                 						    System.out.print("Enter book Id :");
                                 			bookId = scanner.nextInt();
-                                			if(!isBookIssued(connection,studentId,bookId)){
+                                			if(!staff.isBookIssued(connection,studentId,bookId)){
                                 				System.out.println("This Book is not issued by student");
                 						    	break;
                 						    }
                 						    staff.renewBook(connection,studentId,bookId);
                 						    break;
                 						case 8:
+                						scanner.nextLine();
                     						System.out.print("Enter Student Id :");
                                 			studentId = scanner.nextLine();
-                                			if(!isValidStudentId(connection,studentId)){
+                                			if(!staff.isValidStudentId(connection,studentId)){
                                 				System.out.println("Student id is Invalid");
                 						    	break;
                 						    }
@@ -1587,7 +1615,7 @@ class Librarian extends Staff {
                 						case 9:
                 						    System.out.print("Enter Student Id :");
                                 			studentId = scanner.nextLine();
-                                			if(!isValidStudentId(connection,studentId)){
+                                			if(!staff.isValidStudentId(connection,studentId)){
                                 				System.out.println("Student id is Invalid");
                 						    	break;
                 						    }
@@ -1601,41 +1629,42 @@ class Librarian extends Staff {
                     						System.out.println("Enter Valid Choice! ");
                    							break;
             						}
+            						} while (cp != 10);
                         	Choice =0;
-                        	
                         	break;
                         case 3:
                         	String studentPassword = "";
-                        	String studentId = "";
-                        	int cp = 0;
+                            Student student = new Student();
+                        	String studentI = "";
+                        	int p = 0;
                         	System.out.print("Enter Student Id :");
-                            studentId = scanner.nextLine();
-                            if(!isValidStudentId(connection,studentId)){
+                            studentI = scanner.nextLine();
+                            if(!student.isValidStudentId(connection,studentI)){
                             	System.out.println("Student id is Invalid");
                 				break;
                 			}
                 			System.out.print("Enter Student Password :");
                             studentPassword = scanner.nextLine();
-                			if(!isValidStudentPassword(connection,studentId,studentPassword)){
+                			if(!student.isValidStudentPassword(connection,studentI,studentPassword)){
                             	System.out.println("Student Password is Invalid");
                 				break;
                 			}
-                			Student student = new Student();
+                			
                 			do 
                             {
-                            	clearScreen();
+                            	
                                 System.out.println("1.Available Books In Library");
                                 System.out.println("2.Get Student Information");
                                 System.out.println("0.To Exit");
                              	System.out.print("Enter Your Choice:");
-								cp = scanner.nextInt();
+								p = scanner.nextInt();
 								scanner.nextLine();
-            					switch (cp) {
+            					switch (p) {
                 					case 1:
                 						student.printBooks(connection);
                         				break;
                         			case 2:
-                						student.studentinfo(connection,studentId);
+                						student.studentinfo(connection,studentI);
                         				break;
                         			case 0:
                 						Choice = 0;
@@ -1645,11 +1674,13 @@ class Librarian extends Staff {
                         				System.out.println("Enter Valid Choice! ");
                         				break;
                     			}
-                    		} while(cp != 0);
+                    		} while(p != 0);
                     		Choice =0;
                     		break;
-              	} while (Choice != 0);
-            } else {
+              	}
+            } while (Choice != 0);
+        }
+             else {
                 System.out.println("Failed to connect to the database!");
             }
         } catch (ClassNotFoundException e) {
